@@ -3,7 +3,7 @@ message: "If you use this software, please cite the associated manuscript. Corre
 title: "Reproducible analysis package for Open-data evaluation of seismic-hazard warning models, response workload, and public safety records in coal mines"
 type: software
 version: 2.0.0
-date-released: 2026-07-16
+date-released: 2026-07-18
 authors:
   - family-names: Liu
     given-names: Yuan
