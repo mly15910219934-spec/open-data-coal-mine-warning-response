@@ -75,8 +75,7 @@ The model analysis is an open-data benchmark and is not evidence of calibrated a
 
 ## 12. Citation
 
-See `CITATION.cff`. A permanent repository DOI has not yet been assigned; see `DOI_REQUIRED_BEFORE_SUBMISSION.md`.
-
+See `CITATION.cff`. The archived release is available at https://doi.org/10.5281/zenodo.21423640.
 ## 13. License
 
 Source code in `src/`, `tests/`, and `config/` is licensed under the MIT License.
