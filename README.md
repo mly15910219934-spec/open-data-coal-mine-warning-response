@@ -79,10 +79,14 @@ See `CITATION.cff`. A permanent repository DOI has not yet been assigned; see `D
 
 ## 13. License
 
-The authors or authorized rights holders have not yet confirmed an open-source
-license. See `LICENSE` and `LICENSE_SELECTION_REQUIRED.md`. The repository must
-remain private until the license has been selected and approved.
+Source code in `src/`, `tests/`, and `config/` is licensed under the MIT License.
 
+Original public-case coding tables and associated documentation in
+`data/public_cases/` are licensed under the Creative Commons Attribution
+4.0 International License (CC BY 4.0).
+
+The UCI Seismic-bumps source data are not redistributed in this repository
+and remain subject to the terms of the original data provider.
 ## 14. Version correspondence
 
 Release version 2.0.0 corresponds to the author-approved frozen v2 replacement analysis used in the PLOS ONE submission-ready manuscript. It is not claimed to be the exact configuration used for any earlier manuscript version.
