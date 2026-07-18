@@ -1,0 +1,91 @@
+{
+  "configuration_statement": "This is a new reproducible configuration and is not claimed to be the exact configuration originally used for the manuscript.",
+  "software_versions": {
+    "python": "3.12.13",
+    "numpy": "2.5.1",
+    "pandas": "3.0.3",
+    "scipy": "1.18.0",
+    "scikit_learn": "1.9.0",
+    "matplotlib": "3.11.0"
+  },
+  "analysis_config": {
+    "configuration_status": "new reproducible configuration; not the verified original manuscript configuration",
+    "required_statement": "This is a new reproducible configuration and is not claimed to be the exact configuration originally used for the manuscript.",
+    "dataset": {
+      "name": "Seismic-bumps",
+      "doi": "10.24432/C5W902",
+      "url": "https://archive.ics.uci.edu/static/public/266/seismic+bumps.zip",
+      "archive_file": "seismic+bumps.zip",
+      "data_file": "seismic-bumps.arff"
+    },
+    "target": "class",
+    "categorical_features": [
+      "seismic",
+      "seismoacoustic",
+      "shift",
+      "ghazard"
+    ],
+    "numeric_features": [
+      "genergy",
+      "gpuls",
+      "gdenergy",
+      "gdpuls",
+      "nbumps",
+      "nbumps2",
+      "nbumps3",
+      "nbumps4",
+      "nbumps5",
+      "nbumps6",
+      "nbumps7",
+      "nbumps89",
+      "energy",
+      "maxenergy"
+    ],
+    "preprocessing": {
+      "missing_values": "no imputation; validation fails if missing values are present",
+      "categorical": "OneHotEncoder(handle_unknown=\"ignore\")",
+      "scaled_numeric_models": [
+        "Logistic Regression",
+        "SVM"
+      ],
+      "numeric_scaler": "StandardScaler()",
+      "tree_numeric_transform": "passthrough",
+      "fit_scope": "preprocessing is fitted inside Pipeline on training data only",
+      "resampling": "none"
+    },
+    "split": {
+      "train_fraction": 0.7,
+      "test_fraction": 0.3,
+      "stratify": true,
+      "random_state": 42
+    },
+    "score": {
+      "method": "predict_proba[:, 1]",
+      "positive_rule": "score >= decision_cutoff",
+      "interpretation": "decision cut-offs, not absolute hazard probabilities"
+    },
+    "thresholds": [
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7
+    ],
+    "robustness": {
+      "folds": 5,
+      "repeats": 10,
+      "random_state": 42,
+      "bootstrap_iterations": 2000,
+      "bootstrap_random_state": 42
+    }
+  },
+  "train_records": 1808,
+  "test_records": 776,
+  "test_positive": 51,
+  "test_negative": 725,
+  "score_method": "predict_proba[:, 1]",
+  "sampling": "none",
+  "missing_value_handling": "no imputation; validated absent"
+}

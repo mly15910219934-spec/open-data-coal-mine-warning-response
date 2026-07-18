@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "coal-mine-warning-response"
+version = "0.2.0"
+description = "Reproducible open-data analysis for coal-mine warning-response research"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+  "numpy==2.5.1",
+  "pandas==3.0.3",
+  "scipy==1.18.0",
+  "scikit-learn==1.9.0",
+  "matplotlib==3.11.0",
+  "PyYAML==6.0.3",
+  "pytest==9.1.1",
+]
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+

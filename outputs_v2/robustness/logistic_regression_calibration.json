@@ -1,0 +1,4 @@
+{
+  "brier_score": 0.1716877862505807,
+  "interpretation": "Decision scores are not treated as absolute hazard probabilities."
+}

@@ -1,0 +1,14 @@
+import pandas as pd
+from src.utils import ROOT
+
+
+def test_threshold_outputs():
+    df = pd.read_csv(ROOT / "outputs_v2/tables/logistic_regression_threshold_sensitivity.csv")
+    assert not any(str(c).startswith("Unnamed") for c in df.columns)
+    assert df.model.eq("Logistic Regression").all()
+    assert df.threshold.tolist() == [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
+    assert df.warning_workload.is_monotonic_decreasing
+    assert (df.warning_workload == df.tp + df.fp).all()
+    assert (df.false_alarms == df.fp).all()
+    assert (df.missed_hazardous_cases == df.fn).all()
+

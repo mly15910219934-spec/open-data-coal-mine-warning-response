@@ -1,0 +1,44 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import platform
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import sklearn
+import yaml
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def load_yaml(relative: str) -> dict:
+    with (ROOT / relative).open(encoding="utf-8") as handle:
+        return yaml.safe_load(handle)
+
+
+def ensure_output_dirs() -> None:
+    for relative in ["data/raw", "data/processed", "outputs/tables", "outputs/figures", "outputs/metrics", "outputs/metadata", "outputs/robustness"]:
+        (ROOT / relative).mkdir(parents=True, exist_ok=True)
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def write_json(path: Path, value: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(value, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+
+
+def software_versions() -> dict:
+    import matplotlib
+    import scipy
+
+    return {"python": platform.python_version(), "numpy": np.__version__, "pandas": pd.__version__, "scipy": scipy.__version__, "scikit_learn": sklearn.__version__, "matplotlib": matplotlib.__version__}
+

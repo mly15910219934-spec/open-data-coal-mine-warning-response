@@ -1,0 +1,31 @@
+from __future__ import annotations
+
+import pandas as pd
+from scipy.io import arff
+
+from .utils import ROOT, load_yaml, sha256, write_json
+
+
+def load_dataset() -> tuple[pd.DataFrame, pd.Series]:
+    path = ROOT / "data/raw" / load_yaml("config/frozen_analysis_v2.yaml")["dataset"]["data_file"]
+    records, _ = arff.loadarff(path)
+    frame = pd.DataFrame(records)
+    for column in frame.select_dtypes(include="object"):
+        frame[column] = frame[column].str.decode("utf-8")
+    target = frame.pop("class").astype(int)
+    return frame, target
+
+
+def main() -> None:
+    X, y = load_dataset()
+    path = ROOT / "data/raw" / load_yaml("config/frozen_analysis_v2.yaml")["dataset"]["data_file"]
+    report = {"rows": len(X), "features": X.shape[1], "positive": int(y.sum()), "negative": int((y == 0).sum()), "missing_values": int(X.isna().sum().sum()), "field_order": list(X.columns) + ["class"], "data_sha256": sha256(path)}
+    assert report["rows"] == 2584 and report["features"] == 18
+    assert report["positive"] == 170 and report["negative"] == 2414
+    assert report["missing_values"] == 0
+    write_json(ROOT / "outputs/metadata/dataset_validation.json", report)
+    print(report)
+
+
+if __name__ == "__main__":
+    main()
