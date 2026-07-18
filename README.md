@@ -79,7 +79,9 @@ See `CITATION.cff`. A permanent repository DOI has not yet been assigned; see `D
 
 ## 13. License
 
-The author has not yet confirmed an open-source license. See `LICENSE` and `LICENSE_SELECTION_REQUIRED.md`. Public deposition must not occur until the license is selected and confirmed.
+The authors or authorized rights holders have not yet confirmed an open-source
+license. See `LICENSE` and `LICENSE_SELECTION_REQUIRED.md`. The repository must
+remain private until the license has been selected and approved.
 
 ## 14. Version correspondence
 
