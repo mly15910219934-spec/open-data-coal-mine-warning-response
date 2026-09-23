@@ -1,0 +1,5 @@
+{
+  "command": "python scripts/run_all_analysis.py",
+  "seconds": 740.14,
+  "exit_code": 0
+}

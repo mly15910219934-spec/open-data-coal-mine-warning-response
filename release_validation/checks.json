@@ -1,0 +1,42 @@
+[
+  {
+    "command": "python -m pip check",
+    "seconds": 0.574,
+    "exit_code": 0
+  },
+  {
+    "command": "python -m compileall -q .",
+    "seconds": 0.424,
+    "exit_code": 0
+  },
+  {
+    "command": "python scripts/run_all_analysis.py",
+    "seconds": 740.14,
+    "exit_code": 0
+  },
+  {
+    "command": "python src/check_package.py",
+    "seconds": 19.074,
+    "exit_code": 0
+  },
+  {
+    "command": "python src/preprocessing/preprocess.py",
+    "seconds": 1.748,
+    "exit_code": 0
+  },
+  {
+    "command": "python scripts/generate_tables.py",
+    "seconds": 1.655,
+    "exit_code": 0
+  },
+  {
+    "command": "python scripts/generate_figures.py",
+    "seconds": 3.47,
+    "exit_code": 0
+  },
+  {
+    "command": "python tests/reproducibility_check.py",
+    "seconds": 19.08,
+    "exit_code": 0
+  }
+]

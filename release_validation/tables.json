@@ -1,0 +1,5 @@
+{
+  "command": "python scripts/generate_tables.py",
+  "seconds": 1.655,
+  "exit_code": 0
+}

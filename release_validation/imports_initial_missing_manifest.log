@@ -1,0 +1,207 @@
+{
+  "python_imports": [
+    {
+      "file": "scripts/generate_figures.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "scripts/generate_tables.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "scripts/run_all_analysis.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/__init__.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/check_package.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/download_data.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/evaluation/__init__.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/evaluation/check_baseline.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/evaluation/export_tables.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/evaluation/model_performance.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/evaluation/threshold_analysis.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/figure_generation/__init__.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/figure_generation/diagram_export.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/figure_generation/figure1_framework.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/figure_generation/figure2_architecture.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/figure_generation/figure3_response_chain.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/figure_generation/figure4_model_performance.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/figure_generation/figure5_threshold_workload.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/figure_generation/figure6_calibration.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/figure_generation/generate_all.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/figure_generation/plot_v2.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/model_training/__init__.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/model_training/run_revision.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/preprocessing/__init__.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/preprocessing/preprocess.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/run_all.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/run_revision_all.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/statistics/__init__.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/statistics/bootstrap_analysis.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/statistics/robustness_analysis.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/statistics/supplement_v2.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/summarize_case_screening.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/utils.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/v2_pipeline.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/validate_data.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "src/workflow.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "tests/reproducibility_check.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "tests/test_revision.py",
+      "pass": true,
+      "error": ""
+    },
+    {
+      "file": "tests/test_v2.py",
+      "pass": true,
+      "error": ""
+    }
+  ],
+  "syntax_errors": [],
+  "absolute_path_hits": [],
+  "missing_readme_paths": [
+    "metadata/package_file_manifest.csv"
+  ],
+  "case_inventory_32_ids_match": true,
+  "case_subdirectories_32_match": true,
+  "passed": false
+}

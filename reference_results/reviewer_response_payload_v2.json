@@ -1,0 +1,93 @@
+[
+  {
+    "ID": "R1.5",
+    "heading": "Reviewer 1 Comment 5",
+    "comment": "Inconsistent imbalance handling and the need for matched operating points.",
+    "response": "We addressed both aspects in the analysis package. LR, RF and SVM retain balanced class weights, and GB receives balanced sample weights computed only from its fitting subset. The main held-out predictions from the completed revision were retained unchanged. GB has recall 0.412, PR-AUC 0.258 and TP/FP/FN = 21/83/30. We also compare all four models at exactly 147 alerts, retaining whole score ties. Identical numerical cut-offs are not treated as equivalent operating conditions.",
+    "changes": "Table 4; Table 5; S2 Table; proposed Sections 2.3 and 3.1–3.2"
+  },
+  {
+    "ID": "R1.6",
+    "heading": "Reviewer 1 Comment 6",
+    "comment": "Non-monotonic calibration, absence of a time/staffing basis for alert burden, and explicit cost-ratio or decision analysis.",
+    "response": "We retained and report the local non-monotonic LR calibration pattern instead of smoothing it away. Calibration curves and Brier scores are provided for all four models. Alert burden is explicitly TP + FP within the held-out records; there are no staffing or dispatch-capacity measurements. We added relative cost sensitivity for hypothetical FN:FP ratios of 1:1, 2:1, 5:1, 10:1, 20:1, 50:1 and 100:1. The cost function is C = r_FN × FN + FP. Its held-out minima are descriptive, not recommended mine thresholds or empirical economic estimates.",
+    "changes": "S1 Fig; S3 Fig; S6 Table; proposed Sections 2.4 and 3.2–3.3"
+  },
+  {
+    "ID": "R1.7",
+    "heading": "Reviewer 1 Comment 7",
+    "comment": "SVM probability=True and Platt scaling versus decision-function classifications.",
+    "response": "We rechecked the saved scores and margin outputs. They differ on 131 records, with agreement 0.831. The probability rule at 0.5 yields no positive predictions; the positive-margin rule yields TP 19, FP 112 and FN 32. SVC probability=True produces Platt-scaled probability outputs, and the 0.5 probability rule does not coincide with the sign of the SVM decision function in this fitted model. This discrepancy is reported rather than treated as an implementation error. No replacement calibration model was fitted.",
+    "changes": "SVM_probability_check.csv; SVM_disagreement_records.csv; proposed Section 3.3"
+  },
+  {
+    "ID": "R2.model_scope",
+    "heading": "Reviewer 2 Model scope",
+    "comment": "Adequacy of the model range and more advanced approaches.",
+    "response": "The study is a transparent open-data warning-evaluation feasibility analysis, not a state-of-the-art algorithm benchmark. Four conventional baseline classifiers were retained. The revision focuses on consistent imbalance handling, resampling sensitivity, operating-point analysis, calibration and statistical comparison. Richer sequential and site-level data would be needed for a meaningful temporal deep-learning evaluation. No CNN, RNN, GPR, stacking, Bayesian optimization, neural network or additional classifier was introduced.",
+    "changes": "reviewer_methodological_justifications.md; proposed Section 2.3"
+  },
+  {
+    "ID": "R2.imbalance",
+    "heading": "Reviewer 2 Class imbalance",
+    "comment": "Class imbalance handling and minority-class evaluation.",
+    "response": "All four primary models use training-derived balanced weighting. We report recall, precision, F1-score, false alarms and missed hazardous cases alongside discrimination and accuracy. GB weights are recalculated inside each fitting subset, and no held-out or validation labels enter fitting. The reference cut-off is not presented as an intrinsically fair comparison across models.",
+    "changes": "Table 4; Table 5; S2 Table; repeated_cv_fit_audit.json"
+  },
+  {
+    "ID": "R2.resampling",
+    "heading": "Reviewer 2 Resampling sensitivity",
+    "comment": "Absence of an oversampling or resampling comparator.",
+    "response": "RandomOverSampler is included as a sensitivity analysis rather than as the primary modeling strategy. Ordinary SMOTE was not adopted because the dataset contains mixed categorical and continuous predictors and the purpose was to avoid introducing synthetic category combinations without a dedicated mixed-data synthesis design. This is a scope-specific choice, not a claim that all mixed-data synthetic sampling is invalid. No model is assumed to benefit from oversampling. The RandomOverSampler arm was actually fitted on the original training subset and in each of the 50 repeated-CV folds. It uses no balanced class weights or GB balanced sample weights, avoiding double correction. All estimator settings other than those explicitly removed weights are unchanged. All sensitivity results, including unfavorable changes, are retained.",
+    "changes": "S5 Table; resampling_heldout_fit_audit.json; resampling_cv_fit_audit.json"
+  },
+  {
+    "ID": "R2.calibration",
+    "heading": "Reviewer 2 Brier score and calibration",
+    "comment": "Probability reliability and calibration assessment.",
+    "response": "We report four-model calibration curves and Brier scores (LR 0.172, RF 0.064, GB 0.110, SVM 0.059). No model score is assumed to be an absolute hazard probability. In this imbalanced sample, smaller Brier score alone does not establish superior safety-warning performance, so discrimination and minority-class operating-point measures are reported alongside it.",
+    "changes": "S1 Fig; S2 Table; proposed Section 3.3"
+  },
+  {
+    "ID": "R2.rrmse",
+    "heading": "Reviewer 2 RRMSE request",
+    "comment": "Request for relative root mean squared error.",
+    "response": "We appreciate the request for an additional error measure. RRMSE is primarily a regression error metric for continuous outcomes, whereas the present task is binary classification. We therefore retained classification-appropriate discrimination, minority-class, calibration, and decision-oriented measures, including ROC-AUC, PR-AUC, recall, precision, F1-score, Brier score, calibration curves, missed hazardous cases, and alert burden. RRMSE was not calculated.",
+    "changes": "reviewer_methodological_justifications.md; proposed Section 2.3"
+  },
+  {
+    "ID": "R2.all_model_sweep",
+    "heading": "Reviewer 2 All model cut off analysis",
+    "comment": "Need to evaluate thresholds for every model rather than LR alone.",
+    "response": "The retained sweep evaluates all four models, giving 396 model–cut-off rows. Recall and held-out test-set alert burden are displayed in separate panels, and Table 5 uses a common attainable alert count. Thus, the analysis does not infer cross-model fairness from a common numerical probability cut-off.",
+    "changes": "Fig 5; Table 5; S3 Table"
+  },
+  {
+    "ID": "R2.fine_grid",
+    "heading": "Reviewer 2 Fine cut off grid",
+    "comment": "Need for finer threshold increments and transparent workload trade-offs.",
+    "response": "Cut-offs span 0.01–0.99 in increments of 0.01. No model is retrained for the sweep. TP, FP, FN, recall, precision and alert burden are retained at every point. This finer descriptive grid does not establish a validated deployment threshold.",
+    "changes": "S3 Table; S6 Table; proposed Section 2.4"
+  },
+  {
+    "ID": "R2.statistics",
+    "heading": "Reviewer 2 Formal statistical comparison",
+    "comment": "Need for formal paired model comparisons.",
+    "response": "We independently recomputed paired DeLong ROC-AUC tests with Holm adjustment and exact paired McNemar tests at the common alert burden. The outputs match the original revision package exactly. Comparisons use the same held-out records; no unequal-burden McNemar test is used. Adjusted p-values and effect estimates are provided, without claiming universal superiority.",
+    "changes": "S4 Table DeLong and McNemar; statistical_comparison_report_v2.md"
+  },
+  {
+    "ID": "R2.robustness",
+    "heading": "Reviewer 2 Robustness and uncertainty intervals",
+    "comment": "Need for repeated validation and confidence intervals.",
+    "response": "We replaced the single five-fold CV summary with 5 × 10 RepeatedStratifiedKFold restricted to the fixed 70% training subset. Preprocessing and weighting are refitted inside each training fold, with sample SD reported across 50 folds. We also computed 2,000 paired stratified held-out bootstrap resamples, seed 42, using common indices across models. Percentile 95% intervals cover ROC-AUC, PR-AUC, recall, precision and Brier score. Undefined zero-denominator precision cases are explicitly flagged and assigned zero by the stated convention. The intervals remain conditional on the fitted models and class composition.",
+    "changes": "S4 Table; repeated_cv_fold_results.csv; bootstrap_2000_raw.csv; proposed Section 2.5"
+  },
+  {
+    "ID": "R2.features",
+    "heading": "Reviewer 2 Feature selection and preprocessing",
+    "comment": "Absence of feature selection or dimensionality reduction and preprocessing rationale.",
+    "response": "All 18 original predictors were retained to preserve the published open-data representation and avoid introducing an additional model-selection layer. Feature selection and dimensionality reduction were therefore not used in the primary feasibility analysis. Alternative feature-selection pipelines may affect minority-class performance and remain a topic for future model-development work. This does not assert that PCA is intrinsically inappropriate. One-hot encoding is fitted only on training records; numerical standardization is confined to LR and SVM, with numerical passthrough for tree models. Missing values are absent and no imputation is introduced. The held-out set never contributes to preprocessing, weighting or resampling.",
+    "changes": "S1 File; actual_pipeline_parameters.json; proposed Section 2.3"
+  }
+]

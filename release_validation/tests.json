@@ -1,0 +1,5 @@
+{
+  "command": "python tests/reproducibility_check.py",
+  "seconds": 19.08,
+  "exit_code": 0
+}

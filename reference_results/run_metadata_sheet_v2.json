@@ -1,0 +1,250 @@
+{
+  "name": "Run_Metadata",
+  "headers": [
+    "Item",
+    "Value",
+    "Description"
+  ],
+  "rows": [
+    [
+      "Revision analysis status",
+      "Stage-two supplementary analysis completed",
+      "Main held-out predictions unchanged"
+    ],
+    [
+      "Python",
+      "3.12.14",
+      "Actual revision rerun runtime"
+    ],
+    [
+      "Historical frozen-v2 Python",
+      "3.12.13",
+      "Historical metadata; not rerun in that runtime in this task"
+    ],
+    [
+      "Main imbalance strategy",
+      "class_weight=balanced for LR/RF/SVM; train-derived balanced sample weights for GB",
+      "All weights use only the current training subset/fold"
+    ],
+    [
+      "GB sample weighting",
+      "compute_sample_weight(class_weight=\"balanced\", y=y_fit)",
+      "Weight n_fit/(2*n_class); no validation/test labels"
+    ],
+    [
+      "Split",
+      "stratified 70:30",
+      "Original split assignments preserved"
+    ],
+    [
+      "Split seed",
+      42,
+      "No reseeding"
+    ],
+    [
+      "Train records",
+      1808,
+      "Fixed training subset"
+    ],
+    [
+      "Test records",
+      776,
+      "Untouched held-out subset"
+    ],
+    [
+      "Test positives",
+      51,
+      "Label 1"
+    ],
+    [
+      "Test negatives",
+      725,
+      "Label 0"
+    ],
+    [
+      "Repeated cross-validation",
+      "RepeatedStratifiedKFold 5 x 10; seed 42",
+      "Training subset only; preprocessing and weighting refitted per fold"
+    ],
+    [
+      "CV summary",
+      "Mean and sample SD (ddof=1)",
+      "Overlapping folds are not independent experiments"
+    ],
+    [
+      "Bootstrap",
+      2000,
+      "Paired stratified held-out resamples; percentile 95% CI"
+    ],
+    [
+      "Bootstrap seed",
+      42,
+      "Shared resample indices across models"
+    ],
+    [
+      "Bootstrap strata",
+      "51 positive + 725 negative draws with replacement",
+      "Conditional on fitted predictions and fixed class composition"
+    ],
+    [
+      "Precision convention",
+      0,
+      "When TP+FP=0; all such resamples explicitly flagged"
+    ],
+    [
+      "Threshold grid",
+      "0.01 to 0.99, increment 0.01",
+      "396 model-cutoff combinations; model cut-offs not absolute hazard probabilities"
+    ],
+    [
+      "Matched alert burden",
+      "Common attainable count nearest target 150; whole score ties retained",
+      "Scores select count; labels only evaluate"
+    ],
+    [
+      "RandomOverSampler sensitivity",
+      "training-only imblearn Pipeline; seed 42; sampling_strategy=auto; shrinkage=None",
+      "class_weight=None for LR/RF/SVM; no GB balanced sample weights"
+    ],
+    [
+      "Cost ratios",
+      "1, 2, 5, 10, 20, 50, 100",
+      "Hypothetical FN:FP ratios; not measured mine-specific costs"
+    ],
+    [
+      "Cost equation",
+      "C = r_FN * FN + FP; per record = C / 776",
+      "Held-out descriptive minima, not deployment-optimal thresholds"
+    ],
+    [
+      "Cost ties",
+      "lowest cutoff among equal descriptive held-out minima; retain all tied cutoffs",
+      "All tied cutoffs retained in S6 Table"
+    ],
+    [
+      "SVM probability check",
+      "predict_proba >=0.5 vs decision_function >0",
+      "Original CSV reverified exactly"
+    ],
+    [
+      "DeLong",
+      "Paired ROC-AUC comparison, six pairs, Holm correction",
+      "Reverified from unchanged scores"
+    ],
+    [
+      "McNemar",
+      "Exact paired test at common alert count, six pairs, Holm correction",
+      "Same held-out records; no unequal-burden test"
+    ],
+    [
+      "Hyperparameter tuning",
+      "none",
+      "Original hyperparameters retained"
+    ],
+    [
+      "Feature selection",
+      "none",
+      "All 18 original predictors retained; no PCA"
+    ],
+    [
+      "Field data",
+      "none",
+      "No field validation"
+    ],
+    [
+      "Mine-specific cost data",
+      "none",
+      "Hypothetical sensitivity only"
+    ],
+    [
+      "Case coding",
+      "unchanged",
+      "No second-coder or intra-coder result generated"
+    ],
+    [
+      "Historical S1 preservation",
+      "archive/stage1_supporting/S1_File.xlsx",
+      "Original retained byte-for-byte; current Robustness sheet replaces outdated intervals"
+    ],
+    [
+      "Current result sources",
+      "S2 to S6 Tables and results/*.csv",
+      "Legacy reports in this package are archived stage-one material"
+    ],
+    [
+      "numpy",
+      "2.5.1",
+      "Exact package version"
+    ],
+    [
+      "pandas",
+      "3.0.3",
+      "Exact package version"
+    ],
+    [
+      "scipy",
+      "1.18.0",
+      "Exact package version"
+    ],
+    [
+      "scikit-learn",
+      "1.9.0",
+      "Exact package version"
+    ],
+    [
+      "matplotlib",
+      "3.11.0",
+      "Exact package version"
+    ],
+    [
+      "PyYAML",
+      "6.0.3",
+      "Exact package version"
+    ],
+    [
+      "pytest",
+      "9.1.1",
+      "Exact package version"
+    ],
+    [
+      "Pillow",
+      "12.3.0",
+      "Exact package version"
+    ],
+    [
+      "imbalanced-learn",
+      "0.14.2",
+      "Exact package version"
+    ],
+    [
+      "Configuration status",
+      "This is a new reproducible configuration and is not claimed to be the exact configuration originally used for the manuscript.",
+      "Historical configuration remains unrecovered"
+    ],
+    [
+      "Dataset",
+      "Seismic-bumps",
+      "Published open dataset"
+    ],
+    [
+      "Dataset DOI",
+      "10.24432/C5W902",
+      "Persistent source identifier"
+    ],
+    [
+      "Dataset URL",
+      "https://archive.ics.uci.edu/static/public/266/seismic+bumps.zip",
+      "Original source"
+    ],
+    [
+      "Data SHA256",
+      "aabe512fab65b36d1dfb462650b75cfd8d99d8cc2723e8ecb4e6f5e1caccd5a7",
+      "Unchanged original ARFF bytes"
+    ],
+    [
+      "Complete dependencies",
+      "code/requirements_v2_lock.txt",
+      "All installed Python package versions"
+    ]
+  ]
+}

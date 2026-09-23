@@ -1,0 +1,5 @@
+Model,Brier Score,Calibration bins,Strategy,Test samples,Positive samples
+Logistic Regression,0.1716877862505807,10,quantile,776,51
+Random Forest,0.064147938144329897,10,quantile,776,51
+Gradient Boosting,0.11001749011420484,10,quantile,776,51
+SVM,0.058711316131681804,10,quantile,776,51

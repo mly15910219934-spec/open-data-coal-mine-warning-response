@@ -1,0 +1,13 @@
+Version:
+2.1.0
+
+Changes from Version 2.0.0:
+
+- Updated figure-generation scripts.
+- Improved reproducibility documentation.
+- Added revised manuscript support files.
+- Maintained original analysis pipeline.
+
+Release status: local candidate; not uploaded.
+Prior DOI supplied by the author: 10.5281/zenodo.21423640 (Version 2.0.0).
+No Version 2.1.0 DOI has been assigned or inferred.

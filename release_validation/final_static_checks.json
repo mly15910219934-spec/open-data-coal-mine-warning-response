@@ -1,0 +1,9 @@
+{
+  "hidden_files": [],
+  "cache_files": [],
+  "personal_absolute_paths": [],
+  "high_confidence_secret_patterns": [],
+  "scope": "release text files; source Office XML reviewed in preceding audit and PPTX unchanged",
+  "citation_fields_and_author_order": "PASS",
+  "frozen_yaml_and_reference_data_preserved": "PASS"
+}

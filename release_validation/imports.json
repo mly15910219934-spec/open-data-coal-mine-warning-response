@@ -1,0 +1,5 @@
+{
+  "command": "python src/check_package.py",
+  "seconds": 19.074,
+  "exit_code": 0
+}
