@@ -1,2 +1,0 @@
-"""Reproducible analysis for the coal-mine warning-response manuscript."""
-
