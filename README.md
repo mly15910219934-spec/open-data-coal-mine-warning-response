@@ -8,7 +8,7 @@ It reproduces Table 4 (held-out model performance), Table 5 (matched alert burde
 
 # Version
 
-Version: **2.1.0**
+Version: **3.0.0**
 
 This release corresponds to the revised manuscript submitted to PLOS ONE.
 
