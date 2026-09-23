@@ -1,0 +1,6 @@
+File,Pixels,DPI,Mode,Compression,Size MB,Result
+Fig4_revision_combined.tif,"(2250, 1065)","(300.0, 300.0)",RGB,tiff_lzw,0.244878,PASS
+Fig5_revision_tradeoff.tif,"(2250, 1065)","(300.0, 300.0)",RGB,tiff_lzw,0.196376,PASS
+S1_Fig_revision_calibration.tif,"(2250, 1680)","(300.0, 300.0)",RGB,tiff_lzw,0.247634,PASS
+S2_Fig_matched_alert_burden.tif,"(2250, 1230)","(300.0, 300.0)",RGB,tiff_lzw,0.167228,PASS
+S3_Fig_cost_sensitivity.tif,"(2250, 1740)","(300.0, 300.0)",RGB,tiff_lzw,0.28775,PASS

@@ -1,0 +1,8 @@
+{
+  "DeLong": "exact match",
+  "McNemar": "exact match",
+  "SVM": "exact match",
+  "matched_count": 147,
+  "Table5": "exact match",
+  "McNemar_accuracy_difference_CI": "retained first-stage unstratified paired 2000 bootstrap; distinct from new stratified primary metric intervals"
+}

@@ -1,0 +1,5 @@
+Model,Fitting records,Positive,Negative,GB weight negative,GB weight positive
+Logistic Regression,1808,119,1689,,
+Random Forest,1808,119,1689,,
+Gradient Boosting,1808,119,1689,0.53522794552989938,7.5966386554621845
+SVM,1808,119,1689,,

@@ -1,0 +1,69 @@
+Model,Metric,Value,Exact match
+Logistic Regression,ROC-AUC,0.78342123056118995,True
+Logistic Regression,PR-AUC,0.21425254046749942,True
+Logistic Regression,Brier Score,0.1716877862505807,True
+Logistic Regression,Decision cutoff,0.5,True
+Logistic Regression,TP,32,True
+Logistic Regression,FP,134,True
+Logistic Regression,TN,591,True
+Logistic Regression,FN,19,True
+Logistic Regression,Accuracy,0.80283505154639179,True
+Logistic Regression,Precision,0.19277108433734941,True
+Logistic Regression,Recall,0.62745098039215685,True
+Logistic Regression,F1-score,0.29493087557603687,True
+Logistic Regression,False alarm rate,0.18482758620689654,True
+Logistic Regression,Warning workload,166,True
+Logistic Regression,Warning workload percentage,0.21391752577319587,True
+Logistic Regression,False alarms,134,True
+Logistic Regression,Missed hazardous cases,19,True
+Random Forest,ROC-AUC,0.76179851250845165,True
+Random Forest,PR-AUC,0.24362702831417471,True
+Random Forest,Brier Score,0.064147938144329897,True
+Random Forest,Decision cutoff,0.5,True
+Random Forest,TP,8,True
+Random Forest,FP,18,True
+Random Forest,TN,707,True
+Random Forest,FN,43,True
+Random Forest,Accuracy,0.92139175257731953,True
+Random Forest,Precision,0.30769230769230771,True
+Random Forest,Recall,0.15686274509803921,True
+Random Forest,F1-score,0.20779220779220781,True
+Random Forest,False alarm rate,0.024827586206896551,True
+Random Forest,Warning workload,26,True
+Random Forest,Warning workload percentage,0.033505154639175257,True
+Random Forest,False alarms,18,True
+Random Forest,Missed hazardous cases,43,True
+Gradient Boosting,ROC-AUC,0.75138607167004734,True
+Gradient Boosting,PR-AUC,0.25809209414169937,True
+Gradient Boosting,Brier Score,0.11001749011420484,True
+Gradient Boosting,Decision cutoff,0.5,True
+Gradient Boosting,TP,21,True
+Gradient Boosting,FP,83,True
+Gradient Boosting,TN,642,True
+Gradient Boosting,FN,30,True
+Gradient Boosting,Accuracy,0.85438144329896903,True
+Gradient Boosting,Precision,0.20192307692307693,True
+Gradient Boosting,Recall,0.41176470588235292,True
+Gradient Boosting,F1-score,0.2709677419354839,True
+Gradient Boosting,False alarm rate,0.11448275862068966,True
+Gradient Boosting,Warning workload,104,True
+Gradient Boosting,Warning workload percentage,0.13402061855670103,True
+Gradient Boosting,False alarms,83,True
+Gradient Boosting,Missed hazardous cases,30,True
+SVM,ROC-AUC,0.69606490872210947,True
+SVM,PR-AUC,0.17028322110882241,True
+SVM,Brier Score,0.058711316131681804,True
+SVM,Decision cutoff,0.5,True
+SVM,TP,0,True
+SVM,FP,0,True
+SVM,TN,725,True
+SVM,FN,51,True
+SVM,Accuracy,0.93427835051546393,True
+SVM,Precision,0,True
+SVM,Recall,0,True
+SVM,F1-score,0,True
+SVM,False alarm rate,0,True
+SVM,Warning workload,0,True
+SVM,Warning workload percentage,0,True
+SVM,False alarms,0,True
+SVM,Missed hazardous cases,51,True

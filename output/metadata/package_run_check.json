@@ -1,0 +1,11 @@
+{
+  "fresh_venv_python": "3.12.14",
+  "locked_dependencies_installed_from_offline_wheels": true,
+  "pip_check": "No broken requirements found",
+  "internet_install": "blocked by host network permissions",
+  "clean_extraction": "all output, outputs, outputs_v2 entries omitted before running",
+  "main_command": "python code/run_all.py",
+  "main_command_exit_code": 0,
+  "model_output_policy": "exact equality with supplied full-precision revision reference tables",
+  "publication_performed": false
+}

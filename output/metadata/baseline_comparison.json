@@ -1,0 +1,703 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "table": 4,
+      "model": "Random Forest",
+      "field": "accuracy",
+      "old": "0.921",
+      "new": 0.9213917525773195,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Random Forest",
+      "field": "precision",
+      "old": "0.308",
+      "new": 0.3076923076923077,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Random Forest",
+      "field": "recall",
+      "old": "0.157",
+      "new": 0.1568627450980392,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Random Forest",
+      "field": "f1",
+      "old": "0.208",
+      "new": 0.2077922077922078,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Random Forest",
+      "field": "roc_auc",
+      "old": "0.762",
+      "new": 0.7617985125084517,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Random Forest",
+      "field": "pr_auc",
+      "old": "0.244",
+      "new": 0.2436270283141747,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Random Forest",
+      "field": "tp",
+      "old": "8",
+      "new": 8,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Random Forest",
+      "field": "fp",
+      "old": "18",
+      "new": 18,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Random Forest",
+      "field": "fn",
+      "old": "43",
+      "new": 43,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Random Forest",
+      "field": "warning_workload",
+      "old": "26",
+      "new": 26,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Logistic Regression",
+      "field": "accuracy",
+      "old": "0.803",
+      "new": 0.8028350515463918,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Logistic Regression",
+      "field": "precision",
+      "old": "0.193",
+      "new": 0.1927710843373494,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Logistic Regression",
+      "field": "recall",
+      "old": "0.627",
+      "new": 0.6274509803921569,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Logistic Regression",
+      "field": "f1",
+      "old": "0.295",
+      "new": 0.29493087557603687,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Logistic Regression",
+      "field": "roc_auc",
+      "old": "0.783",
+      "new": 0.78342123056119,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Logistic Regression",
+      "field": "pr_auc",
+      "old": "0.214",
+      "new": 0.21425254046749942,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Logistic Regression",
+      "field": "tp",
+      "old": "32",
+      "new": 32,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Logistic Regression",
+      "field": "fp",
+      "old": "134",
+      "new": 134,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Logistic Regression",
+      "field": "fn",
+      "old": "19",
+      "new": 19,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Logistic Regression",
+      "field": "warning_workload",
+      "old": "166",
+      "new": 166,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Gradient Boosting",
+      "field": "accuracy",
+      "old": "0.927",
+      "new": 0.9265463917525774,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Gradient Boosting",
+      "field": "precision",
+      "old": "0.200",
+      "new": 0.2,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Gradient Boosting",
+      "field": "recall",
+      "old": "0.039",
+      "new": 0.0392156862745098,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Gradient Boosting",
+      "field": "f1",
+      "old": "0.066",
+      "new": 0.06557377049180328,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Gradient Boosting",
+      "field": "roc_auc",
+      "old": "0.745",
+      "new": 0.7447599729546992,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Gradient Boosting",
+      "field": "pr_auc",
+      "old": "0.189",
+      "new": 0.18943650880607785,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Gradient Boosting",
+      "field": "tp",
+      "old": "2",
+      "new": 2,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Gradient Boosting",
+      "field": "fp",
+      "old": "8",
+      "new": 8,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Gradient Boosting",
+      "field": "fn",
+      "old": "49",
+      "new": 49,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "Gradient Boosting",
+      "field": "warning_workload",
+      "old": "10",
+      "new": 10,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "SVM",
+      "field": "accuracy",
+      "old": "0.934",
+      "new": 0.9342783505154639,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "SVM",
+      "field": "precision",
+      "old": "0.000",
+      "new": 0.0,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "SVM",
+      "field": "recall",
+      "old": "0.000",
+      "new": 0.0,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "SVM",
+      "field": "f1",
+      "old": "0.000",
+      "new": 0.0,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "SVM",
+      "field": "roc_auc",
+      "old": "0.696",
+      "new": 0.6960649087221095,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "SVM",
+      "field": "pr_auc",
+      "old": "0.170",
+      "new": 0.1702832211088224,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "SVM",
+      "field": "tp",
+      "old": "0",
+      "new": 0,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "SVM",
+      "field": "fp",
+      "old": "0",
+      "new": 0,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "SVM",
+      "field": "fn",
+      "old": "51",
+      "new": 51,
+      "pass": true
+    },
+    {
+      "table": 4,
+      "model": "SVM",
+      "field": "warning_workload",
+      "old": "0",
+      "new": 0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.1,
+      "field": "precision",
+      "old": "0.066",
+      "new": 0.06606217616580311,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.1,
+      "field": "recall",
+      "old": "1.000",
+      "new": 1.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.1,
+      "field": "f1",
+      "old": "0.124",
+      "new": 0.12393681652490887,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.1,
+      "field": "warning_workload",
+      "old": "772",
+      "new": 772.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.1,
+      "field": "false_alarms",
+      "old": "721",
+      "new": 721.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.1,
+      "field": "missed_hazardous_cases",
+      "old": "0",
+      "new": 0.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.2,
+      "field": "precision",
+      "old": "0.079",
+      "new": 0.07931570762052877,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.2,
+      "field": "recall",
+      "old": "1.000",
+      "new": 1.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.2,
+      "field": "f1",
+      "old": "0.147",
+      "new": 0.14697406340057637,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.2,
+      "field": "warning_workload",
+      "old": "643",
+      "new": 643.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.2,
+      "field": "false_alarms",
+      "old": "592",
+      "new": 592.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.2,
+      "field": "missed_hazardous_cases",
+      "old": "0",
+      "new": 0.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.3,
+      "field": "precision",
+      "old": "0.103",
+      "new": 0.10250569476082004,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.3,
+      "field": "recall",
+      "old": "0.882",
+      "new": 0.8823529411764706,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.3,
+      "field": "f1",
+      "old": "0.184",
+      "new": 0.1836734693877551,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.3,
+      "field": "warning_workload",
+      "old": "439",
+      "new": 439.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.3,
+      "field": "false_alarms",
+      "old": "394",
+      "new": 394.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.3,
+      "field": "missed_hazardous_cases",
+      "old": "6",
+      "new": 6.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.4,
+      "field": "precision",
+      "old": "0.138",
+      "new": 0.1377952755905512,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.4,
+      "field": "recall",
+      "old": "0.686",
+      "new": 0.6862745098039216,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.4,
+      "field": "f1",
+      "old": "0.230",
+      "new": 0.22950819672131148,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.4,
+      "field": "warning_workload",
+      "old": "254",
+      "new": 254.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.4,
+      "field": "false_alarms",
+      "old": "219",
+      "new": 219.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.4,
+      "field": "missed_hazardous_cases",
+      "old": "16",
+      "new": 16.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.5,
+      "field": "precision",
+      "old": "0.193",
+      "new": 0.1927710843373494,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.5,
+      "field": "recall",
+      "old": "0.627",
+      "new": 0.6274509803921569,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.5,
+      "field": "f1",
+      "old": "0.295",
+      "new": 0.29493087557603687,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.5,
+      "field": "warning_workload",
+      "old": "166",
+      "new": 166.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.5,
+      "field": "false_alarms",
+      "old": "134",
+      "new": 134.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.5,
+      "field": "missed_hazardous_cases",
+      "old": "19",
+      "new": 19.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.6,
+      "field": "precision",
+      "old": "0.237",
+      "new": 0.23684210526315788,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.6,
+      "field": "recall",
+      "old": "0.529",
+      "new": 0.5294117647058824,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.6,
+      "field": "f1",
+      "old": "0.327",
+      "new": 0.32727272727272727,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.6,
+      "field": "warning_workload",
+      "old": "114",
+      "new": 114.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.6,
+      "field": "false_alarms",
+      "old": "87",
+      "new": 87.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.6,
+      "field": "missed_hazardous_cases",
+      "old": "24",
+      "new": 24.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.7,
+      "field": "precision",
+      "old": "0.253",
+      "new": 0.25316455696202533,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.7,
+      "field": "recall",
+      "old": "0.392",
+      "new": 0.39215686274509803,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.7,
+      "field": "f1",
+      "old": "0.308",
+      "new": 0.3076923076923077,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.7,
+      "field": "warning_workload",
+      "old": "79",
+      "new": 79.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.7,
+      "field": "false_alarms",
+      "old": "59",
+      "new": 59.0,
+      "pass": true
+    },
+    {
+      "table": 5,
+      "model": "Logistic Regression",
+      "cutoff": 0.7,
+      "field": "missed_hazardous_cases",
+      "old": "31",
+      "new": 31.0,
+      "pass": true
+    }
+  ]
+}

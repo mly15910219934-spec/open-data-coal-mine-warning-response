@@ -1,0 +1,13 @@
+{
+  "rows": 2584,
+  "positive": 170,
+  "negative": 2414,
+  "train_n": 1808,
+  "test_n": 776,
+  "test_positive": 51,
+  "test_negative": 725,
+  "seed": 42,
+  "data_sha256": "aabe512fab65b36d1dfb462650b75cfd8d99d8cc2723e8ecb4e6f5e1caccd5a7",
+  "missing_values": 0,
+  "preprocessing_fit": "inside each model Pipeline, on fitting subset only"
+}

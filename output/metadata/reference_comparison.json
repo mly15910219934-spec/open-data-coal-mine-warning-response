@@ -1,0 +1,67 @@
+[
+  {
+    "file": "model_performance_revision.csv",
+    "comparison": "exact dataframe match",
+    "rows": 4
+  },
+  {
+    "file": "table5_matched_operating_point.csv",
+    "comparison": "exact dataframe match",
+    "rows": 4
+  },
+  {
+    "file": "held_out_predictions.csv",
+    "comparison": "exact dataframe match",
+    "rows": 776
+  },
+  {
+    "file": "threshold_analysis_all_models.csv",
+    "comparison": "exact dataframe match",
+    "rows": 396
+  },
+  {
+    "file": "split_assignments.csv",
+    "comparison": "exact dataframe match",
+    "rows": 2584
+  },
+  {
+    "file": "bootstrap_2000_raw.csv",
+    "comparison": "exact dataframe match",
+    "rows": 8000
+  },
+  {
+    "file": "bootstrap_2000_summary.csv",
+    "comparison": "exact dataframe match",
+    "rows": 20
+  },
+  {
+    "file": "repeated_cv_summary.csv",
+    "comparison": "exact dataframe match",
+    "rows": 4
+  },
+  {
+    "file": "resampling_sensitivity_test.csv",
+    "comparison": "exact dataframe match",
+    "rows": 8
+  },
+  {
+    "file": "resampling_cv_summary.csv",
+    "comparison": "exact dataframe match",
+    "rows": 4
+  },
+  {
+    "file": "cost_ratio_sensitivity_summary.csv",
+    "comparison": "exact dataframe match",
+    "rows": 28
+  },
+  {
+    "file": "delong_pairwise.csv",
+    "comparison": "exact dataframe match",
+    "rows": 6
+  },
+  {
+    "file": "mcnemar_pairwise.csv",
+    "comparison": "exact dataframe match",
+    "rows": 6
+  }
+]

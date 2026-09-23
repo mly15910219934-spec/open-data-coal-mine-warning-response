@@ -1,0 +1,36 @@
+{
+  "seed": 42,
+  "cv": {
+    "folds": 5,
+    "repeats": 10,
+    "scope": "fixed 70% training subset",
+    "SD_ddof": 1
+  },
+  "bootstrap": {
+    "resamples": 2000,
+    "paired": true,
+    "stratified": true,
+    "positive": 51,
+    "negative": 725,
+    "seed": 42,
+    "percentiles": [
+      2.5,
+      97.5
+    ],
+    "precision_if_no_positive_predictions": 0,
+    "interval_type": "conditional on fixed fitted models and held-out class composition"
+  },
+  "resampling": "RandomOverSampler, train-only, without balanced weights",
+  "cost_ratios": [
+    1,
+    2,
+    5,
+    10,
+    20,
+    50,
+    100
+  ],
+  "cost_tie_rule": "lowest cutoff among equal descriptive held-out minima; retain all tied cutoffs",
+  "tuning": false,
+  "feature_selection": false
+}

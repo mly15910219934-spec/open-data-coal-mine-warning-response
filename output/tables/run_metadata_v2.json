@@ -1,0 +1,214 @@
+{
+  "analysis_version": "major_revision_ml_stage2",
+  "completed_utc": "2026-09-23T08:46:45.632485+00:00",
+  "python": "3.12.14",
+  "historical_frozen_v2_python": "3.12.13",
+  "historical_runtime_retested": false,
+  "package_versions": {
+    "numpy": "2.5.1",
+    "pandas": "3.0.3",
+    "scipy": "1.18.0",
+    "scikit-learn": "1.9.0",
+    "matplotlib": "3.11.0",
+    "PyYAML": "6.0.3",
+    "pytest": "9.1.1",
+    "Pillow": "12.3.0",
+    "imbalanced-learn": "0.14.2"
+  },
+  "main_heldout_predictions_sha256": "864857d5a6e91204dffdbb975a87f7380cbc0c93657675f46317a95ec0a28db5",
+  "data_sha256": "aabe512fab65b36d1dfb462650b75cfd8d99d8cc2723e8ecb4e6f5e1caccd5a7",
+  "main_predictions_changed": false,
+  "main_strategy": "class_weight=balanced for LR/RF/SVM; train-derived balanced sample weights for GB",
+  "plan": {
+    "seed": 42,
+    "cv": {
+      "folds": 5,
+      "repeats": 10,
+      "scope": "fixed 70% training subset",
+      "SD_ddof": 1
+    },
+    "bootstrap": {
+      "resamples": 2000,
+      "paired": true,
+      "stratified": true,
+      "positive": 51,
+      "negative": 725,
+      "seed": 42,
+      "percentiles": [
+        2.5,
+        97.5
+      ],
+      "precision_if_no_positive_predictions": 0,
+      "interval_type": "conditional on fixed fitted models and held-out class composition"
+    },
+    "resampling": "RandomOverSampler, train-only, without balanced weights",
+    "cost_ratios": [
+      1,
+      2,
+      5,
+      10,
+      20,
+      50,
+      100
+    ],
+    "cost_tie_rule": "lowest cutoff among equal descriptive held-out minima; retain all tied cutoffs",
+    "tuning": false,
+    "feature_selection": false
+  },
+  "original_analysis_config": {
+    "configuration_status": "new reproducible configuration; not the verified original manuscript configuration",
+    "required_statement": "This is a new reproducible configuration and is not claimed to be the exact configuration originally used for the manuscript.",
+    "dataset": {
+      "name": "Seismic-bumps",
+      "doi": "10.24432/C5W902",
+      "url": "https://archive.ics.uci.edu/static/public/266/seismic+bumps.zip",
+      "archive_file": "seismic+bumps.zip",
+      "data_file": "seismic-bumps.arff"
+    },
+    "target": "class",
+    "categorical_features": [
+      "seismic",
+      "seismoacoustic",
+      "shift",
+      "ghazard"
+    ],
+    "numeric_features": [
+      "genergy",
+      "gpuls",
+      "gdenergy",
+      "gdpuls",
+      "nbumps",
+      "nbumps2",
+      "nbumps3",
+      "nbumps4",
+      "nbumps5",
+      "nbumps6",
+      "nbumps7",
+      "nbumps89",
+      "energy",
+      "maxenergy"
+    ],
+    "preprocessing": {
+      "missing_values": "no imputation; validation fails if missing values are present",
+      "categorical": "OneHotEncoder(handle_unknown=\"ignore\")",
+      "scaled_numeric_models": [
+        "Logistic Regression",
+        "SVM"
+      ],
+      "numeric_scaler": "StandardScaler()",
+      "tree_numeric_transform": "passthrough",
+      "fit_scope": "preprocessing is fitted inside Pipeline on training data only",
+      "resampling": "none"
+    },
+    "split": {
+      "train_fraction": 0.7,
+      "test_fraction": 0.3,
+      "stratify": true,
+      "random_state": 42
+    },
+    "score": {
+      "method": "predict_proba[:, 1]",
+      "positive_rule": "score >= decision_cutoff",
+      "interpretation": "decision cut-offs, not absolute hazard probabilities"
+    },
+    "thresholds": [
+      0.1,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+      0.6,
+      0.7
+    ],
+    "robustness": {
+      "folds": 5,
+      "repeats": 10,
+      "random_state": 42,
+      "bootstrap_iterations": 2000,
+      "bootstrap_random_state": 42
+    }
+  },
+  "original_model_config": {
+    "configuration_status": "new reproducible configuration; not the verified original manuscript configuration",
+    "required_statement": "This is a new reproducible configuration and is not claimed to be the exact configuration originally used for the manuscript.",
+    "logistic_regression": {
+      "penalty": "l2",
+      "dual": false,
+      "tol": 0.0001,
+      "C": 1.0,
+      "fit_intercept": true,
+      "intercept_scaling": 1,
+      "class_weight": "balanced",
+      "random_state": 42,
+      "solver": "lbfgs",
+      "max_iter": 1000,
+      "warm_start": false,
+      "n_jobs": null,
+      "l1_ratio": 0.0,
+      "verbose": 0
+    },
+    "random_forest": {
+      "n_estimators": 100,
+      "criterion": "gini",
+      "max_depth": null,
+      "min_samples_split": 2,
+      "min_samples_leaf": 1,
+      "min_weight_fraction_leaf": 0.0,
+      "max_features": "sqrt",
+      "max_leaf_nodes": null,
+      "min_impurity_decrease": 0.0,
+      "bootstrap": true,
+      "oob_score": false,
+      "n_jobs": null,
+      "random_state": 42,
+      "verbose": 0,
+      "warm_start": false,
+      "class_weight": "balanced",
+      "ccp_alpha": 0.0,
+      "max_samples": null,
+      "monotonic_cst": null
+    },
+    "gradient_boosting": {
+      "loss": "log_loss",
+      "learning_rate": 0.1,
+      "n_estimators": 100,
+      "subsample": 1.0,
+      "criterion": "friedman_mse",
+      "min_samples_split": 2,
+      "min_samples_leaf": 1,
+      "min_weight_fraction_leaf": 0.0,
+      "max_depth": 3,
+      "min_impurity_decrease": 0.0,
+      "init": null,
+      "random_state": 42,
+      "max_features": null,
+      "verbose": 0,
+      "max_leaf_nodes": null,
+      "warm_start": false,
+      "validation_fraction": 0.1,
+      "n_iter_no_change": null,
+      "tol": 0.0001,
+      "ccp_alpha": 0.0
+    },
+    "support_vector_machine": {
+      "C": 1.0,
+      "kernel": "rbf",
+      "degree": 3,
+      "gamma": "scale",
+      "coef0": 0.0,
+      "shrinking": true,
+      "probability": true,
+      "tol": 0.001,
+      "cache_size": 200,
+      "class_weight": "balanced",
+      "verbose": false,
+      "max_iter": -1,
+      "decision_function_shape": "ovr",
+      "break_ties": false,
+      "random_state": 42
+    }
+  },
+  "primary_parameters_file": "actual_pipeline_parameters.json",
+  "sensitivity_parameters_file": "resampling_actual_pipeline_parameters.json",
+  "limitations": "row-wise split; no time/site grouping or field validation; no empirical mine costs; no additional case coding"
+}

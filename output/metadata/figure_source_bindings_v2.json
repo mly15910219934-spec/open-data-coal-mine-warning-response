@@ -1,0 +1,218 @@
+[
+  {
+    "source": "curve_source_data.csv",
+    "series": "Logistic Regression",
+    "n": 85,
+    "exact_curve_match": true
+  },
+  {
+    "source": "curve_source_data.csv",
+    "series": "Logistic Regression",
+    "n": 776,
+    "exact_curve_match": true
+  },
+  {
+    "source": "curve_source_data.csv",
+    "series": "Random Forest",
+    "n": 61,
+    "exact_curve_match": true
+  },
+  {
+    "source": "curve_source_data.csv",
+    "series": "Random Forest",
+    "n": 70,
+    "exact_curve_match": true
+  },
+  {
+    "source": "curve_source_data.csv",
+    "series": "Gradient Boosting",
+    "n": 163,
+    "exact_curve_match": true
+  },
+  {
+    "source": "curve_source_data.csv",
+    "series": "Gradient Boosting",
+    "n": 715,
+    "exact_curve_match": true
+  },
+  {
+    "source": "curve_source_data.csv",
+    "series": "SVM",
+    "n": 98,
+    "exact_curve_match": true
+  },
+  {
+    "source": "curve_source_data.csv",
+    "series": "SVM",
+    "n": 776,
+    "exact_curve_match": true
+  },
+  {
+    "source": "threshold_analysis_all_models.csv",
+    "series": "Logistic Regression",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "threshold_analysis_all_models.csv",
+    "series": "Logistic Regression",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "threshold_analysis_all_models.csv",
+    "series": "Random Forest",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "threshold_analysis_all_models.csv",
+    "series": "Random Forest",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "threshold_analysis_all_models.csv",
+    "series": "Gradient Boosting",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "threshold_analysis_all_models.csv",
+    "series": "Gradient Boosting",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "threshold_analysis_all_models.csv",
+    "series": "SVM",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "threshold_analysis_all_models.csv",
+    "series": "SVM",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "calibration_bin_data.csv",
+    "series": "Logistic Regression",
+    "n": 10,
+    "exact_curve_match": true
+  },
+  {
+    "source": "calibration_bin_data.csv",
+    "series": "Random Forest",
+    "n": 9,
+    "exact_curve_match": true
+  },
+  {
+    "source": "calibration_bin_data.csv",
+    "series": "Gradient Boosting",
+    "n": 10,
+    "exact_curve_match": true
+  },
+  {
+    "source": "calibration_bin_data.csv",
+    "series": "SVM",
+    "n": 10,
+    "exact_curve_match": true
+  },
+  {
+    "source": "matched_alert_burden_analysis.csv",
+    "series": "Logistic Regression",
+    "n": 6,
+    "exact_curve_match": true
+  },
+  {
+    "source": "matched_alert_burden_analysis.csv",
+    "series": "Random Forest",
+    "n": 6,
+    "exact_curve_match": true
+  },
+  {
+    "source": "matched_alert_burden_analysis.csv",
+    "series": "Gradient Boosting",
+    "n": 6,
+    "exact_curve_match": true
+  },
+  {
+    "source": "matched_alert_burden_analysis.csv",
+    "series": "SVM",
+    "n": 6,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "Logistic Regression 1:1",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "Logistic Regression 10:1",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "Logistic Regression 100:1",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "Random Forest 1:1",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "Random Forest 10:1",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "Random Forest 100:1",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "Gradient Boosting 1:1",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "Gradient Boosting 10:1",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "Gradient Boosting 100:1",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "SVM 1:1",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "SVM 10:1",
+    "n": 99,
+    "exact_curve_match": true
+  },
+  {
+    "source": "cost_ratio_sensitivity_full.csv",
+    "series": "SVM 100:1",
+    "n": 99,
+    "exact_curve_match": true
+  }
+]
