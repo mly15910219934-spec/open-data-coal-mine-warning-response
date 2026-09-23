@@ -1,6 +1,5 @@
 cff-version: 1.2.0
-message: "Please cite this software using the metadata below. The DOI is the author-confirmed concept DOI; specify Version 2.1.0 when citing this release."
-type: software
+message: "Please cite this software using the metadata below. 
 title: "Open-data evaluation of seismic-hazard warning models, alert burden, and public safety records in coal mines"
 authors:
   - family-names: "Liu"
@@ -20,7 +19,7 @@ authors:
   - family-names: "Mu"
     given-names: "Lianyu"
 version: 2.1.0
-doi: 10.5281/zenodo.21423640
-url: https://doi.org/10.5281/zenodo.21423640
+doi: 10.5281/zenodo.22921641
+url: https://doi.org/10.5281/zenodo.22921641
 license: MIT
 abstract: "Reproducible analysis package for the revised manuscript submitted to PLOS ONE, including held-out model evaluation, matched alert burden and bootstrap uncertainty."
