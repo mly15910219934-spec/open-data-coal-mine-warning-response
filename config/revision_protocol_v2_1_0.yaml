@@ -1,0 +1,35 @@
+# Documentation of existing revision-engine settings; not a new model specification.
+seed: 42
+main_strategy:
+  logistic_regression: class_weight=balanced
+  random_forest: class_weight=balanced
+  gradient_boosting: compute_sample_weight balanced on each fitting subset
+  svm: class_weight=balanced
+cv:
+  folds: 5
+  repeats: 10
+  scope: fixed 70% training subset
+  random_state: 42
+  standard_deviation_ddof: 1
+bootstrap:
+  resamples: 2000
+  paired: true
+  stratified: true
+  random_state: 42
+  percentiles: [2.5, 97.5]
+  metrics: [ROC-AUC, PR-AUC, Recall, Precision, Brier Score]
+threshold_sweep:
+  start: 0.01
+  stop: 0.99
+  step: 0.01
+  classification_rule: score >= cutoff
+matched_alert_burden:
+  target: 150
+  tie_handling: retain whole score ties
+  choice: nearest common attainable count; choose lower count on equal distance
+resampling_sensitivity:
+  method: RandomOverSampler
+  random_state: 42
+  class_weights: null
+  sample_weights: null
+  scope: training only

@@ -1,0 +1,75 @@
+configuration_status: new reproducible configuration; not the verified original manuscript configuration
+required_statement: This is a new reproducible configuration and is not claimed to be the exact configuration originally used for the manuscript.
+logistic_regression:
+  penalty: l2
+  dual: false
+  tol: 0.0001
+  C: 1.0
+  fit_intercept: true
+  intercept_scaling: 1
+  class_weight: balanced
+  random_state: 42
+  solver: lbfgs
+  max_iter: 1000
+  warm_start: false
+  n_jobs: null
+  l1_ratio: 0.0
+  verbose: 0
+random_forest:
+  n_estimators: 100
+  criterion: gini
+  max_depth: null
+  min_samples_split: 2
+  min_samples_leaf: 1
+  min_weight_fraction_leaf: 0.0
+  max_features: sqrt
+  max_leaf_nodes: null
+  min_impurity_decrease: 0.0
+  bootstrap: true
+  oob_score: false
+  n_jobs: null
+  random_state: 42
+  verbose: 0
+  warm_start: false
+  class_weight: balanced
+  ccp_alpha: 0.0
+  max_samples: null
+  monotonic_cst: null
+gradient_boosting:
+  loss: log_loss
+  learning_rate: 0.1
+  n_estimators: 100
+  subsample: 1.0
+  criterion: friedman_mse
+  min_samples_split: 2
+  min_samples_leaf: 1
+  min_weight_fraction_leaf: 0.0
+  max_depth: 3
+  min_impurity_decrease: 0.0
+  init: null
+  random_state: 42
+  max_features: null
+  verbose: 0
+  max_leaf_nodes: null
+  warm_start: false
+  validation_fraction: 0.1
+  n_iter_no_change: null
+  tol: 0.0001
+  ccp_alpha: 0.0
+support_vector_machine:
+  C: 1.0
+  kernel: rbf
+  degree: 3
+  gamma: scale
+  coef0: 0.0
+  shrinking: true
+  probability: true
+  tol: 0.001
+  cache_size: 200
+  class_weight: balanced
+  verbose: false
+  max_iter: -1
+  decision_function_shape: ovr
+  break_ties: false
+  random_state: 42
+
