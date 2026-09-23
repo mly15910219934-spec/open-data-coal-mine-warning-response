@@ -1,0 +1,101 @@
+import json,hashlib,itertools
+import numpy as np,pandas as pd
+from sklearn.metrics import roc_auc_score,average_precision_score,brier_score_loss
+from sklearn.model_selection import RepeatedStratifiedKFold
+from supplement_v2 import ROOT,OUT,read,guard,data,NAMES,ABBR,old,ros_model
+
+def js(p):return json.loads(p.read_text(encoding='utf-8'))
+def test_original_hash_and_main_prediction_lock():guard()
+def test_exact_starting_metrics():
+    assert read('v2_starting_metric_checks.csv')['Exact match'].all()
+    p=read('held_out_predictions.csv');m=read('model_performance_revision.csv').set_index('Model')
+    for name in NAMES:
+        row=old.score_row(name,p.label,p[ABBR[name]+'_score'].to_numpy())
+        for k,v in row.items():
+            if k!='Model':assert v==m.loc[name,k]
+def test_split_and_features_unchanged():data()
+def test_repeated_cv_scope_and_weights():
+    Xtr,Xte,ytr,yte,X,y=data();test=set(Xte.index)
+    audits=js(OUT/'repeated_cv_fit_audit.json');expected=list(RepeatedStratifiedKFold(n_splits=5,n_repeats=10,random_state=42).split(Xtr,ytr));assert len(audits)==50
+    for a,(ti,vi) in zip(audits,expected):
+        tr=set(a['train_indices']);va=set(a['validation_indices'])
+        assert a['train_indices']==Xtr.iloc[ti].index.tolist() and a['validation_indices']==Xtr.iloc[vi].index.tolist()
+        assert tr.isdisjoint(va) and tr.isdisjoint(test) and va.isdisjoint(test)
+        assert tr|va==set(Xtr.index);assert a['train_positive']==int(y.loc[list(tr)].sum())
+        for fit in a['fits']:
+            assert fit['categorical_fit_verified'] and fit['numeric_fit_verified'];assert fit['preprocessing_fit_n']==len(tr)
+            assert fit['training_weight_negative']==len(tr)/(2*a['train_negative']) and fit['training_weight_positive']==len(tr)/(2*a['train_positive'])
+            assert fit['sample_weight']==('balanced' if fit['Model']=='Gradient Boosting' else 'none')
+def test_cv_summaries_from_all_folds():
+    for raw,summ in [('repeated_cv_fold_results.csv','repeated_cv_summary.csv'),('resampling_cv_fold_results.csv','resampling_cv_summary.csv')]:
+        d=read(raw);s=read(summ);assert len(d)==200 and len(s)==4
+        for _,r in s.iterrows():
+            q=d[d.Model==r.Model];assert len(q)==50 and len(q[['Repeat','Fold']].drop_duplicates())==50
+            for k in ['ROC-AUC','PR-AUC']:
+                assert r[k+' mean']==q[k].mean();assert r[k+' SD']==q[k].std(ddof=1)
+    s=read('resampling_sensitivity_cv.csv');assert len(s)==8
+    pd.testing.assert_frame_equal(s,pd.concat([read('repeated_cv_summary.csv'),read('resampling_cv_summary.csv')],ignore_index=True),check_exact=True)
+def test_bootstrap_stratified_paired_indices():
+    ix=np.load(OUT/'bootstrap_paired_indices.npz')['indices'];p=read('held_out_predictions.csv');y=p.label.to_numpy();rng=np.random.default_rng(42)
+    assert ix.shape==(2000,776)
+    for ids in ix:
+        expected=np.r_[rng.choice(np.flatnonzero(y==1),51,replace=True),rng.choice(np.flatnonzero(y==0),725,replace=True)]
+        assert np.array_equal(ids,expected);assert int(y[ids].sum())==51
+def test_bootstrap_summary_and_point_estimates():
+    raw=read('bootstrap_2000_raw.csv');s=read('bootstrap_2000_summary.csv');perf=read('model_performance_revision.csv').set_index('Model');assert len(raw)==8000 and len(s)==20
+    assert (raw['Positive count']==51).all() and (raw['Negative count']==725).all()
+    for _,r in s.iterrows():
+        d=raw[raw.Model==r.Model];assert len(d)==2000 and d.Resample.nunique()==2000
+        assert r['Point estimate']==perf.loc[r.Model,r.Metric]
+        assert np.array_equal([r['Lower 95% CI'],r['Upper 95% CI']],np.quantile(d[r.Metric],[.025,.975]))
+    flagged=raw[raw['Precision zero division applied']];assert len(flagged)==2000 and set(flagged.Model)=={'SVM'} and (flagged.Precision==0).all()
+    assert flagged['Undefined metric reason'].str.contains('No positive predictions').all()
+def test_bootstrap_raw_against_predictions():
+    raw=read('bootstrap_2000_raw.csv').set_index(['Resample','Model']);ix=np.load(OUT/'bootstrap_paired_indices.npz')['indices'];p=read('held_out_predictions.csv');y=p.label.to_numpy()
+    # Every replicate is independently recomputed, not only sampled rows.
+    for b,ids in enumerate(ix,1):
+        yy=y[ids]
+        for name in NAMES:
+            s=p[ABBR[name]+'_score'].to_numpy()[ids];pred=s>=.5;tp=int(((yy==1)&pred).sum());fp=int(((yy==0)&pred).sum());r=raw.loc[(b,name)]
+            assert r['ROC-AUC']==roc_auc_score(yy,s);assert r['PR-AUC']==average_precision_score(yy,s);assert r['Brier Score']==brier_score_loss(yy,s)
+            assert r.Recall==tp/51;assert r.Precision==(tp/(tp+fp) if tp+fp else 0)
+def test_ros_training_scope():
+    train=set(read('split_assignments.csv').query("split=='train'").row_index_zero_based);test=set(read('held_out_predictions.csv').row_index_zero_based)
+    audit=js(OUT/'resampling_cv_fit_audit.json');primary=js(OUT/'repeated_cv_fit_audit.json');assert len(audit)==50
+    for a,b in zip(audit,primary):
+        assert a['train_indices']==b['train_indices'] and a['validation_indices']==b['validation_indices']
+        for fit in a['fits']:
+            res=set(fit['resampled_original_indices']);assert res<=set(a['train_indices']) and res.isdisjoint(a['validation_indices']) and res.isdisjoint(test)
+            assert fit['resampled_n']==2*fit['resampled_positive'];assert fit['class_weight'] is None and fit['sample_weight']=='none'
+            assert fit['preprocessing_fit_n']==len(a['train_indices'])
+    for fit in js(OUT/'resampling_heldout_fit_audit.json'):
+        assert set(fit['resampled_original_indices'])<=train;assert set(fit['resampled_original_indices']).isdisjoint(test)
+def test_ros_parameters_only_authorized_change():
+    actual=js(OUT/'resampling_actual_pipeline_parameters.json')
+    for name,base in old.build_models().items():
+        ros=ros_model(base);b=base.named_steps['model'].get_params();r=ros.named_steps['model'].get_params()
+        for k,v in b.items():assert r[k]==(None if k=='class_weight' else v);assert actual[name]['model__'+k]==repr(r[k])
+        assert ros.named_steps['resample'].get_params()=={'random_state':42,'sampling_strategy':'auto','shrinkage':None}
+def test_ros_test_metrics():
+    preds=read('resampling_held_out_predictions.csv');main=read('held_out_predictions.csv');pd.testing.assert_frame_equal(preds.iloc[:,:2],main.iloc[:,:2])
+    result=read('resampling_sensitivity_test.csv');assert len(result)==8
+    for _,r in result.iterrows():
+        p=preds if r.Strategy=='RandomOverSampler' else main
+        for k,v in old.score_row(r.Model,p.label,p[ABBR[r.Model]+'_score'].to_numpy()).items():assert r[k]==v
+def test_costs_and_descriptive_minima():
+    full=read('cost_ratio_sensitivity_full.csv');s=read('cost_ratio_sensitivity_summary.csv');assert len(full)==2772 and len(s)==28
+    assert np.array_equal(full['Weighted cost'],full['FN:FP cost ratio']*full.FN+full.FP)
+    assert np.array_equal(full['Cost per test record'],full['Weighted cost']/776)
+    for _,r in s.iterrows():
+        d=full[(full.Model==r.Model)&(full['FN:FP cost ratio']==r['FN:FP cost ratio'])];ties=d[d['Weighted cost']==d['Weighted cost'].min()]
+        assert r['Weighted cost']==d['Weighted cost'].min();assert r.Threshold==ties.Threshold.min();assert r['Number of tied cutoffs']==len(ties)
+    assert full.Scenario.str.contains('hypothetical').all();assert s.Interpretation.str.contains('descriptive minimum').all()
+def test_statistical_reverification_receipt():
+    d=js(ROOT/'output/metadata/statistical_reverification_v2.json')
+    for k in ['DeLong','McNemar','SVM','Table5']:assert d[k]=='exact match'
+def test_figure_bindings_and_exports():
+    a=js(ROOT/'output/metadata/figure_source_bindings_v2.json');assert len(a)==36 and all(r['exact_curve_match'] for r in a)
+    audit=pd.read_csv(ROOT/'output/metadata/figure_export_audit_v2.csv');assert len(audit)==5 and (audit.Result=='PASS').all()
+
+def test_no_unnamed_columns():
+    for p in OUT.glob('*.csv'):assert not any(str(k).startswith('Unnamed') for k in pd.read_csv(p,nrows=0).columns)

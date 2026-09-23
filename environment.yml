@@ -1,0 +1,7 @@
+name: coal-mine-warning-response-2.1.0
+channels: [conda-forge]
+dependencies:
+  - python=3.12.14
+  - pip
+  - pip:
+      - -r requirements.txt
