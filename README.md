@@ -6,11 +6,6 @@ This repository contains the reproducible analysis package for the revised manus
 
 It reproduces Table 4 (held-out model performance), Table 5 (matched alert burden), and S4 Table (bootstrap confidence intervals), and retains repeated cross-validation, DeLong/McNemar comparisons, RandomOverSampler sensitivity and statistical figures. It is not merely a figure-code collection.
 
-# Version
-
-Version: **2.1.0**
-
-This release corresponds to the revised manuscript submitted to PLOS ONE.
 
 # Version
 
@@ -130,7 +125,7 @@ The separately supplied 32-case public-record archive is inventoried with hashes
 
 # Citation
 
-Liu, Y.; Miao, K.; Zhang, L.; Dai, W.; Li, H.; Meng, J.; Miao, J.; Mu, L. Open-data evaluation of seismic-hazard warning models, alert burden, and public safety records in coal mines. Software, Version 2.1.0. Zenodo. Concept DOI: [10.5281/zenodo.22921641](https://doi.org/10.5281/zenodo.22921641).
+Liu, Y.; Miao, K.; Zhang, L.; Dai, W.; Li, H.; Meng, J.; Miao, J.; Mu, L. Open-data evaluation of seismic-hazard warning models, alert burden, and public safety records in coal mines. Software, Version 2.1.0. Zenodo. DOI: [10.5281/zenodo.22921641](https://doi.org/10.5281/zenodo.22921641).
 
 Machine-readable author order and version are in `CITATION.cff`.
 
