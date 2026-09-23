@@ -12,7 +12,17 @@ Version: **2.1.0**
 
 This release corresponds to the revised manuscript submitted to PLOS ONE.
 
-Concept DOI: [10.5281/zenodo.21423640](https://doi.org/10.5281/zenodo.21423640), confirmed by the author. This identifies the version family; cite Version 2.1.0 explicitly. No version-specific DOI or publication date has been invented. Preparing this ZIP does not publish a Zenodo record.
+# Version
+
+Version: **2.1.0**
+
+This release corresponds to the revised manuscript submitted to PLOS ONE.
+
+Concept DOI: [10.5281/zenodo.21423640](https://doi.org/10.5281/zenodo.21423640)
+
+Version DOI: [10.5281/zenodo.22921641](https://doi.org/10.5281/zenodo.22921641)
+
+The Concept DOI identifies the software record across versions. The Version DOI identifies this specific Version 2.1.0 release.
 
 # Contents
 
@@ -120,7 +130,7 @@ The separately supplied 32-case public-record archive is inventoried with hashes
 
 # Citation
 
-Liu, Y.; Miao, K.; Zhang, L.; Dai, W.; Li, H.; Meng, J.; Miao, J.; Mu, L. Open-data evaluation of seismic-hazard warning models, alert burden, and public safety records in coal mines. Software, Version 2.1.0. Zenodo. Concept DOI: [10.5281/zenodo.21423640](https://doi.org/10.5281/zenodo.21423640).
+Liu, Y.; Miao, K.; Zhang, L.; Dai, W.; Li, H.; Meng, J.; Miao, J.; Mu, L. Open-data evaluation of seismic-hazard warning models, alert burden, and public safety records in coal mines. Software, Version 2.1.0. Zenodo. Concept DOI: [10.5281/zenodo.22921641](https://doi.org/10.5281/zenodo.22921641).
 
 Machine-readable author order and version are in `CITATION.cff`.
 
