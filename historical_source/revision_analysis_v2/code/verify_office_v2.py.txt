@@ -1,0 +1,72 @@
+"""Read-only Office validation with bundled Python; no spreadsheet authoring."""
+from pathlib import Path
+import json,csv,hashlib,math,zipfile
+from docx import Document
+import openpyxl
+from pypdf import PdfReader
+ROOT=Path(__file__).resolve().parents[1];R=ROOT/'results';LOG=ROOT/'logs';T=ROOT/'tables'
+def js(p):return json.loads(p.read_text(encoding='utf-8'))
+def csvrows(n):
+    with (R/n).open(encoding='utf-8-sig',newline='') as f:return list(csv.DictReader(f))
+def match(a,b):
+    if a is None and b in [None,'']:return True
+    if isinstance(a,(int,float)) and isinstance(b,(int,float)):return math.isclose(a,b,rel_tol=0,abs_tol=2e-15)
+    return a==b
+checks=[];cells=0
+payload=js(R/'workbook_payload_v2.json')
+for filename,sheets in payload.items():
+    w=openpyxl.load_workbook(T/filename,data_only=True)
+    assert w.sheetnames==[s['name'] for s in sheets]
+    for s in sheets:
+        actual=w[s['name']];expected=[s['headers']]+s['rows']
+        for i,row in enumerate(expected,1):
+            for j,v in enumerate(row,1):
+                a=actual.cell(i,j).value;assert match(a,v),(filename,s['name'],i,j,a,v);cells+=1
+        assert actual.freeze_panes is not None
+        checks.append({'File':filename,'Sheet':s['name'],'Rows':len(s['rows']),'all_cells_match':True})
+w=openpyxl.load_workbook(T/'S1_File_revision.xlsx',data_only=False);original=openpyxl.load_workbook(ROOT/'archive/stage1_supporting/S1_File.xlsx',data_only=False)
+for s in ['Preprocessing','Model_Parameters']:
+    assert list(w[s].values)==list(original[s].values)
+    for row in original[s]:
+        for a in row:
+            b=w[s][a.coordinate];assert a.number_format==b.number_format
+    checks.append({'File':'S1_File_revision.xlsx','Sheet':s,'unchanged_values_formulas_number_formats':True})
+md=js(R/'run_metadata_sheet_v2.json')
+for i,row in enumerate([md['headers']]+md['rows'],1):
+    for j,v in enumerate(row,1):assert match(w['Run_Metadata'].cell(i,j).value,v)
+cv=csvrows('repeated_cv_summary.csv');bs=csvrows('bootstrap_2000_summary.csv');rows=[]
+for r in cv:
+    for m in ['ROC-AUC','PR-AUC']:rows.append(['Training-only repeated CV',r['Model'],m+' mean and SD',float(r[m+' mean']),float(r[m+' SD']),None,int(r['Validation folds'])])
+for r in bs:rows.append(['Paired stratified bootstrap',r['Model'],r['Metric'],float(r['Point estimate']),float(r['Lower 95% CI']),float(r['Upper 95% CI']),int(r['Resamples'])])
+for i,row in enumerate(rows,2):
+    for j,v in enumerate(row,1):assert match(w['Robustness'].cell(i,j).value,v)
+assert len(rows)==28
+hashes=js(LOG/'supporting_source_hashes_v2.json')
+for name,h in hashes.items():assert hashlib.sha256((ROOT/'archive/stage1_supporting'/name).read_bytes()).hexdigest()==h
+assert hashlib.sha256((T/'S1_Table.xlsx').read_bytes()).hexdigest()==hashes['S1_Table.xlsx']
+tablepayload=js(R/'document_table_payload_v2.json')
+for name,d in tablepayload.items():
+    document=Document(T/(name+'_revision_v2.docx'));actual=[[c.text for c in r.cells] for r in document.tables[0].rows];assert actual==[d['headers']]+d['rows']
+    checks.append({'File':name+'_revision_v2.docx','all_table_cells_match':True,'cells':sum(map(len,actual))})
+response=Document(ROOT/'reports/Reviewer_response_model_revision_v2.docx');text='\n'.join(p.text for p in response.paragraphs);items=js(R/'reviewer_response_payload_v2.json')
+assert text.count('[page/line numbers to be updated after final manuscript formatting]')==len(items)
+for r in items:
+    assert r['heading'] in text and r['comment'] in text and r['response'] in text
+rendercounts={}
+for name in ['Table4_revision_v2','Table5_revision_v2','Reviewer_response_model_revision_v2']:
+    folder=LOG/('render_v2_'+name);pdf=PdfReader(folder/(name+'.pdf'));rendercounts[name]=len(pdf.pages)
+    for i in range(1,len(pdf.pages)+1):assert (folder/f'page-{i}.png').is_file()
+    assert all(len(p.extract_text() or '')>100 for p in pdf.pages)
+# Numerically enumerate the historical S1 intervals and repeated-CV values.
+hist=[];lookup={'roc-auc':'ROC-AUC','pr-auc':'PR-AUC','recall':'Recall','precision':'Precision'}
+for r in list(original['Robustness'].values)[1:]:
+    if r[0]=='Held-out bootstrap':
+        metric=lookup[r[2].split()[0]];new=next(q for q in bs if q['Model']==r[1] and q['Metric']==metric)
+        hist.append([r[1],metric,f'{r[3]:.6f} [{r[4]:.6f}, {r[5]:.6f}]',f"{float(new['Point estimate']):.6f} [{float(new['Lower 95% CI']):.6f}, {float(new['Upper 95% CI']):.6f}]",'Yes','2.5; 3.3','S4 Table; S1 File','Recomputed from revision scores with paired stratified sampling'])
+    elif str(r[0]).startswith('Repeated'):
+        metric='ROC-AUC' if str(r[2]).startswith('ROC') else 'PR-AUC';new=next(q for q in cv if q['Model']==r[1]);hist.append([r[1],metric+' CV',f'{r[3]:.6f} +/- {r[4]:.6f}',f"{float(new[metric+' mean']):.6f} +/- {float(new[metric+' SD']):.6f}",'Yes','2.5; 3.3','S4 Table; S1 File','Fixed training-only repeated CV, replacing historical full-dataset CV'])
+headers=['Model','Metric','Historical S1 value','Current revision value','Replace','Section','Supporting item','Reason']
+table='\n'.join(['| '+' | '.join(headers)+' |','| '+' | '.join(['---']*len(headers))+' |']+['| '+' | '.join(row)+' |' for row in hist])
+marker='\n\n## Historical S1 numerical replacement detail\n\n';p=R/'result_replacement_map_v2.md';base=p.read_text(encoding='utf-8').split(marker)[0];p.write_text(base+marker+table+'\n',encoding='utf-8')
+report={'passed':True,'spreadsheet_data_cells_checked':cells,'workbook_sheets':checks,'S1_robustness_rows_checked':len(rows),'S1_public_cases_unchanged':True,'DOCX_pages':rendercounts,'reviewer_groups':len(items),'xlsx_numeric_absolute_tolerance':2e-15}
+(LOG/'office_verification_v2.json').write_text(json.dumps(report,indent=2),encoding='utf-8');print(json.dumps(report,indent=2))

@@ -1,0 +1,36 @@
+"""Compare freshly regenerated outputs with final manuscript Tables 4 and 5."""
+import csv, json, hashlib, sys
+from pathlib import Path
+from datetime import datetime, timezone
+ROOT = Path(__file__).resolve().parents[1]
+BASE = ROOT/'code/original_baseline'
+def rows(p):
+    with p.open(newline='',encoding='utf-8-sig') as f: return list(csv.DictReader(f))
+doc = json.loads((ROOT/'logs/manuscript_baseline_tables.json').read_text(encoding='utf-8'))
+perf = {r['model']: r for r in rows(BASE/'outputs_v2/tables/model_performance.csv')}
+thresholds = {float(r['threshold']): r for r in rows(BASE/'outputs_v2/tables/logistic_regression_threshold_sensitivity.csv')}
+names={'RF':'Random Forest','LR':'Logistic Regression','GB':'Gradient Boosting','SVM':'SVM'}
+checks=[]
+for r in doc['tables'][3]['rows'][1:]:
+    model=names[r[0]]; new=perf[model]
+    for idx,key in enumerate(['accuracy','precision','recall','f1','roc_auc','pr_auc'],1):
+        checks.append({'table':4,'model':model,'field':key,'old':r[idx],'new':float(new[key]),'pass':abs(float(r[idx])-float(new[key])) <= .000500001})
+    for key,old in zip(['tp','fp','fn'],r[7].split('/')):
+        checks.append({'table':4,'model':model,'field':key,'old':old,'new':int(new[key]),'pass':int(old)==int(new[key])})
+    checks.append({'table':4,'model':model,'field':'warning_workload','old':r[8],'new':int(new['warning_workload']),'pass':int(r[8])==int(new['warning_workload'])})
+for r in doc['tables'][4]['rows'][1:]:
+    new=thresholds[float(r[0])]
+    for idx,key in enumerate(['precision','recall','f1','warning_workload','false_alarms','missed_hazardous_cases'],1):
+        val=float(new[key]); old=float(r[idx]); tol=.000500001 if idx<=3 else 0
+        checks.append({'table':5,'model':'Logistic Regression','cutoff':float(r[0]),'field':key,'old':r[idx],'new':val,'pass':abs(val-old)<=tol})
+passed=all(c['pass'] for c in checks)
+(ROOT/'logs/baseline_comparison.json').write_text(json.dumps({'passed':passed,'checks':checks},indent=2),encoding='utf-8')
+meta=json.loads((BASE/'outputs_v2/metadata/run_metadata.json').read_text())
+data=json.loads((BASE/'outputs/metadata/dataset_validation.json').read_text())
+lines=['# Original reproduction report','',f'UTC verification time: {datetime.now(timezone.utc).isoformat()}',f'Gate: {"PASS" if passed else "STOP — baseline mismatch"}', '',f"Dataset: {data['rows']} records, {data['positive']} positive, {data['negative']} negative, positive ratio {data['positive']/data['rows']:.12f}; {data['features']} input features.", '', 'The unmodified supplied code was executed with `python -m src.run_all` in a separate environment. The initial launch occurred while installation was still completing and failed on an unavailable pandas import; the retained successful rerun log is authoritative. Original source files outside revision_analysis were not changed.', '', 'Comparison uses exact agreement for counts and 0.000500001 tolerance for manuscript values printed to three decimal places.', '', '| Table | Model | Metric | Manuscript | Recomputed | Match |','|---|---|---|---|---|---|']
+for c in checks:
+    lines.append(f"| {c['table']} | {c['model']}"+(f" at {c['cutoff']}" if 'cutoff' in c else '')+f" | {c['field']} | {c['old']} | {c['new']:.12g} | {c['pass']} |")
+lines += ['', '## Configuration', '', '```json', json.dumps(meta,indent=2),'```','', 'Full model settings: code/original_baseline/config/frozen_model_parameters_v2.yaml. Actual parameter export: code/original_baseline/outputs_v2/metadata/model_parameters.json. Split: 70:30 stratified, seed 42. Preprocessing: four categorical variables one-hot encoded; 14 numeric variables standardized for LR/SVM and passed through for RF/GB; no imputation or resampling; preprocessing fitted on training data inside Pipeline.']
+(ROOT/'logs/original_reproduction_report.md').write_text('\n'.join(lines),encoding='utf-8')
+print(json.dumps({'passed':passed,'checks':len(checks),'mismatches':[c for c in checks if not c['pass']]},indent=2))
+sys.exit(0 if passed else 2)

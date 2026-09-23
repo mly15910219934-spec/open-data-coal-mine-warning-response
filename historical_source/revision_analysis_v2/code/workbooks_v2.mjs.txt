@@ -1,0 +1,75 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {Workbook,SpreadsheetFile,FileBlob} from '@oai/artifact-tool';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const payload=JSON.parse(await fs.readFile(path.join(root,'results/workbook_payload_v2.json'),'utf8'));
+const previews=path.join(root,'logs/workbook_previews_v2');await fs.mkdir(previews,{recursive:true});
+const checks=[];
+function col(i){let s='';while(i){i--;s=String.fromCharCode(65+i%26)+s;i=Math.floor(i/26);}return s;}
+function populate(sh,d){
+  const n=d.headers.length,total=d.rows.length+1,end=col(n);sh.showGridLines=false;
+  sh.getRange(`A1:${end}${total}`).values=[d.headers,...d.rows];
+  const all=sh.getRange(`A1:${end}${total}`);all.format.font={name:'Arial',size:10};all.format.verticalAlignment='center';all.format.rowHeight=23;all.format.columnWidth=18;
+  const header=sh.getRange(`A1:${end}1`);header.format={fill:'#1F4E78',font:{name:'Arial',size:10,color:'#FFFFFF',bold:true},rowHeight:52,wrapText:true,horizontalAlignment:'center'};
+  for(let j=0;j<n;j++){
+    const h=d.headers[j],r=sh.getRange(`${col(j+1)}2:${col(j+1)}${total}`);
+    const numeric=d.rows.every(x=>typeof x[j]==='number'||x[j]===null);
+    if(numeric){r.setNumberFormat(/percentage/i.test(h)?'0.00%':d.rows.every(x=>x[j]===null||Number.isInteger(x[j]))?'0':'0.000000');r.format.horizontalAlignment='right';}
+    else {r.format.horizontalAlignment='left';sh.getRange(`${col(j+1)}1:${col(j+1)}${total}`).format.columnWidth=(/^Analysis$/.test(h)?32:/^Metric$/.test(h)?28:/Model|Strategy/.test(h)?26:/reason|Interpretation|Scenario|Description|Value|cutoffs/i.test(h)?55:22);
+      if(/reason|Interpretation|Scenario|cutoffs/i.test(h)){r.format.wrapText=true;r.format.autofitRows();}
+    }
+  }
+  // Set row heights after all text columns, so a short later column cannot
+  // shrink a row containing a long list of tied cut-offs.
+  const longCols=d.headers.map((h,i)=>/reason|Interpretation|Scenario|cutoffs/i.test(h)?i:-1).filter(i=>i>=0);
+  if(longCols.length){
+    for(let i=0;i<d.rows.length;i++){
+      const lines=Math.max(...longCols.map(j=>Math.ceil(String(d.rows[i][j]??'').length/48)));
+      sh.getRange(`A${i+2}:${end}${i+2}`).format.rowHeight=Math.max(23,lines*15+8);
+    }
+  }
+  sh.freezePanes.freezeRows(1);sh.freezePanes.freezeColumns(1);
+  if(d.name==='Run_Metadata'){
+    sh.getRange(`A1:A${total}`).format.columnWidth=34;sh.getRange(`B1:B${total}`).format.columnWidth=74;sh.getRange(`C1:C${total}`).format.columnWidth=74;
+    sh.getRange(`A2:C${total}`).format.wrapText=true;sh.getRange(`A2:C${total}`).format.autofitRows();
+  }
+  const note=col(n+2);sh.getRange(`${note}1`).values=[['Source: '+d.source]];sh.getRange(`${note}1:${note}4`).format.columnWidth=95;
+  if(d.name.includes('cost')||d.name==='Descriptive_minima'){
+    sh.getRange(`${note}2`).values=[['Hypothetical FN:FP costs; not empirical mine-specific costs.']];
+    sh.getRange(`${note}3`).values=[['Held-out descriptive minima are not deployment-optimal thresholds.']];
+  }
+}
+async function verify(wb,file,sheets){
+  wb.recalculate();
+  for(const d of sheets){
+    checks.push({file,sheet:d.name,inspection:(await wb.inspect({kind:'table',range:`'${d.name}'!A1:H5`,include:'values,formulas',tableMaxRows:5,tableMaxCols:8,maxChars:1500})).ndjson});
+    for(let start=1;start<=d.headers.length;start+=6){
+      const end=Math.min(start+5,d.headers.length);const blob=await wb.render({sheetName:d.name,range:`${col(start)}1:${col(end)}7`,scale:1.2,format:'png'});
+      await fs.writeFile(path.join(previews,file.replace('.xlsx','')+'_'+d.name+'_'+start+'.png'),new Uint8Array(await blob.arrayBuffer()));
+    }
+  }
+  checks.push({file,errorScan:(await wb.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#NUM!',options:{useRegex:true,maxResults:20},summary:'Formula error scan'})).ndjson});
+  await(await SpreadsheetFile.exportXlsx(wb)).save(path.join(root,'tables',file));console.log('Saved',file);
+}
+if(process.argv.includes('--supporting')){
+  for(const [file,sheets] of Object.entries(payload)){
+    const wb=Workbook.create();for(const d of sheets)populate(wb.worksheets.add(d.name),d);await verify(wb,file,sheets);
+  }
+}
+if(process.argv.includes('--s1')||process.argv.includes('--inspect-s1')){
+  const wb=await SpreadsheetFile.importXlsx(await FileBlob.load(path.join(root,'archive/stage1_supporting/S1_File.xlsx')));
+  const original=await wb.render({sheetName:'Run_Metadata',range:'A1:C8',scale:1.2,format:'png'});await fs.writeFile(path.join(previews,'S1_before_metadata.png'),new Uint8Array(await original.arrayBuffer()));
+  console.log((await wb.inspect({kind:'table',range:'Run_Metadata!A1:C8',tableMaxRows:8,tableMaxCols:3,maxChars:1600})).ndjson);
+  if(process.argv.includes('--inspect-s1'))process.exit(0);
+  const metadata=JSON.parse(await fs.readFile(path.join(root,'results/run_metadata_sheet_v2.json'),'utf8'));metadata.source='results/run_metadata_v2.json';
+  const sh=wb.worksheets.getItem('Run_Metadata');sh.getUsedRange().clear({applyTo:'contents'});populate(sh,metadata);
+  const cv=payload['S4_Table_revision.xlsx'].find(d=>d.name==='CV_Summary'), bs=payload['S4_Table_revision.xlsx'].find(d=>d.name==='Bootstrap_Summary');
+  const vals=[];
+  for(const row of cv.rows){const r=Object.fromEntries(cv.headers.map((k,i)=>[k,row[i]]));for(const metric of ['ROC-AUC','PR-AUC'])vals.push(['Training-only repeated CV',r.Model,metric+' mean and SD',r[metric+' mean'],r[metric+' SD'],null,r['Validation folds']]);}
+  for(const row of bs.rows){const r=Object.fromEntries(bs.headers.map((k,i)=>[k,row[i]]));vals.push(['Paired stratified bootstrap',r.Model,r.Metric,r['Point estimate'],r['Lower 95% CI'],r['Upper 95% CI'],r.Resamples]);}
+  const robust={name:'Robustness',source:'S4 Table / results repeated CV and bootstrap CSVs',headers:['Analysis','Model','Metric','Estimate','Lower or SD','Upper','Replicates'],rows:vals};
+  const rs=wb.worksheets.getItem('Robustness');rs.getUsedRange().clear({applyTo:'contents'});populate(rs,robust);
+  await verify(wb,'S1_File_revision.xlsx',[metadata,robust]);
+}
+await fs.writeFile(path.join(root,'logs/workbook_checks_v2'+(process.argv.includes('--s1')?'_s1':'')+'.json'),JSON.stringify(checks,null,2));

@@ -1,0 +1,19 @@
+param([string[]]$RelativeFiles=@('tables\Table4_revision_v2.docx','tables\Table5_revision_v2.docx','reports\Reviewer_response_model_revision_v2.docx'))
+$ErrorActionPreference='Stop'
+$root=Split-Path $PSScriptRoot -Parent
+$wps=New-Object -ComObject kwps.Application
+$wps.Visible=$false
+try {
+  foreach($relative in $RelativeFiles) {
+    $inputPath=Join-Path $root $relative
+    $stem=[System.IO.Path]::GetFileNameWithoutExtension($inputPath)
+    $dir=Join-Path $root ('logs\render_v2_'+$stem)
+    New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    $pdf=Join-Path $dir ($stem+'.pdf')
+    $doc=$wps.Documents.Open($inputPath,$false,$true)
+    try { $doc.ExportAsFixedFormat($pdf,17) } finally { $doc.Close($false);[void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($doc) }
+    & 'AUTHOR_LOCAL_PATH_REQUIRED' -scale-to 1600 -png $pdf (Join-Path $dir 'page')
+    if($LASTEXITCODE -ne 0){throw 'Rendering failed'}
+    Write-Output $pdf
+  }
+} finally {[void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($wps)}

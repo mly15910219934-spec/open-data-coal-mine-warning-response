@@ -1,0 +1,162 @@
+"""Sequential, immutable-heldout second-stage analysis. Run --stage 1..6."""
+from pathlib import Path
+import argparse,json,hashlib,platform,importlib.metadata,itertools
+from datetime import datetime,timezone
+import numpy as np
+import pandas as pd
+from sklearn.base import clone
+from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.metrics import roc_auc_score,average_precision_score,brier_score_loss
+from sklearn.utils.class_weight import compute_sample_weight
+from scipy.stats import binomtest
+import run_revision as old
+
+ROOT=Path(__file__).resolve().parents[1]; OUT=ROOT/'results'; LOG=ROOT/'logs'
+NAMES=old.NAMES; ABBR=old.ABBR; SEED=42
+FROZEN=['model_performance_revision.csv','held_out_predictions.csv','split_assignments.csv','threshold_analysis_all_models.csv','matched_alert_burden_analysis.csv','run_metadata.json']
+def read(name):return pd.read_csv(OUT/name,float_precision='round_trip')
+def write(name,rows):
+    df=pd.DataFrame(rows);df.to_csv(OUT/name,index=False,float_format='%.17g');return df
+def dump(path,data):path.write_text(json.dumps(data,indent=2,default=str,allow_nan=False),encoding='utf-8')
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def guard():
+    manifest=json.loads((LOG/'v2_source_manifest.json').read_text())
+    for f in FROZEN:assert sha(OUT/f)==manifest['results/'+f],f+' changed; STOP'
+    raw=ROOT/'code/original_baseline/data/raw/seismic-bumps.arff'
+    assert sha(raw)==json.loads((OUT/'run_metadata.json').read_text())['data_sha256']
+def data():
+    Xtr,Xte,ytr,yte,X,y=old.split_data()
+    pred=read('held_out_predictions.csv');sp=read('split_assignments.csv')
+    assert list(Xte.index)==pred.row_index_zero_based.tolist()
+    assert np.array_equal(yte,pred.label)
+    assert set(Xtr.index)==set(sp.loc[sp['split']=='train','row_index_zero_based'])
+    assert len(X)==2584 and len(X.columns)==18 and int(y.sum())==170
+    assert len(Xte)==776 and int(yte.sum())==51 and not X.isna().any().any()
+    return Xtr,Xte,ytr,yte,X,y
+def stage1():
+    guard();Xtr,Xte,ytr,yte,X,y=data();p=read('held_out_predictions.csv');m=read('model_performance_revision.csv').set_index('Model')
+    checks=[]
+    for name in NAMES:
+        row=old.score_row(name,yte,p[ABBR[name]+'_score'].to_numpy())
+        for k,v in row.items():
+            if k=='Model':continue
+            assert v==m.loc[name,k],(name,k,v,m.loc[name,k])
+            checks.append({'Model':name,'Metric':k,'Value':v,'Exact match':True})
+    assert len(read('threshold_analysis_all_models.csv'))==396
+    write('v2_starting_metric_checks.csv',checks)
+    text='# V2 starting state check\n\nPASS. Original data hash, fixed split, six frozen files and every held-out metric verified. Point estimates match exactly after round-trip CSV parsing.\n\n'
+    text+='| Model | ROC-AUC | PR-AUC (average precision) | Brier |\n|---|---:|---:|---:|\n'
+    for name in NAMES:text+=f"| {name} | {m.loc[name,'ROC-AUC']:.12f} | {m.loc[name,'PR-AUC']:.12f} | {m.loc[name,'Brier Score']:.12f} |\n"
+    text+=f'\nTrain n={len(Xtr)}; held-out n={len(Xte)}, positive={int(yte.sum())}, negative={int((yte==0).sum())}. Seed {SEED}.\n'
+    text+='\nFrozen files are read-only inputs to this extension. Original metadata remains historical; new settings are in run_metadata_v2.json. No main model is refitted by this extension.\n'
+    (LOG/'v2_starting_state_check.md').write_text(text,encoding='utf-8')
+    dump(LOG/'v2_starting_hashes.json',{f:sha(OUT/f) for f in FROZEN})
+    dump(OUT/'supplementary_analysis_plan_v2.json',{'seed':SEED,'cv':{'folds':5,'repeats':10,'scope':'fixed 70% training subset','SD_ddof':1},'bootstrap':{'resamples':2000,'paired':True,'stratified':True,'positive':51,'negative':725,'seed':SEED,'percentiles':[2.5,97.5],'precision_if_no_positive_predictions':0,'interval_type':'conditional on fixed fitted models and held-out class composition'},'resampling':'RandomOverSampler, train-only, without balanced weights','cost_ratios':[1,2,5,10,20,50,100],'cost_tie_rule':'lowest cutoff among equal descriptive held-out minima; retain all tied cutoffs','tuning':False,'feature_selection':False})
+    print(text,flush=True)
+def verify_pre(pipe,name,xf):
+    cfg,_=old.configs();pre=pipe.named_steps['preprocess']
+    cats=pre.named_transformers_['categorical'].categories_
+    for c,seen in zip(cfg['categorical_features'],cats):assert set(seen)==set(xf[c])
+    if name in ['Logistic Regression','SVM']:
+        sc=pre.named_transformers_['numeric'];assert int(sc.n_samples_seen_)==len(xf)
+        assert np.allclose(sc.mean_,xf[cfg['numeric_features']].mean().to_numpy())
+    return {'categorical_fit_verified':True,'numeric_fit_verified':True,'preprocessing_fit_n':len(xf)}
+def ros_model(base):
+    from imblearn.pipeline import Pipeline
+    from imblearn.over_sampling import RandomOverSampler
+    est=clone(base.named_steps['model'])
+    if 'class_weight' in est.get_params():est.set_params(class_weight=None)
+    return Pipeline([('preprocess',clone(base.named_steps['preprocess'])),('resample',RandomOverSampler(random_state=SEED)),('model',est)])
+def cv_run(ros=False):
+    guard();Xtr,Xte,ytr,yte,X,y=data();models=old.build_models();rows=[];audit=[]
+    split=RepeatedStratifiedKFold(n_splits=5,n_repeats=10,random_state=SEED)
+    for i,(ti,vi) in enumerate(split.split(Xtr,ytr)):
+        xf,yf=Xtr.iloc[ti],ytr.iloc[ti];xv,yv=Xtr.iloc[vi],ytr.iloc[vi]
+        assert set(xf.index).isdisjoint(xv.index) and set(xf.index).isdisjoint(Xte.index) and set(xv.index).isdisjoint(Xte.index)
+        entry={'Repeat':i//5+1,'Fold':i%5+1,'train_indices':xf.index.tolist(),'validation_indices':xv.index.tolist(),'train_positive':int(yf.sum()),'train_negative':int((yf==0).sum()),'fits':[]}
+        for name in NAMES:
+            pipe=ros_model(models[name]) if ros else clone(models[name])
+            pipe.fit(xf,yf) if ros else old.fit(pipe,name,xf,yf)
+            check=verify_pre(pipe,name,xf);check['Model']=name
+            if ros:
+                ids=pipe.named_steps['resample'].sample_indices_;assert ids.min()>=0 and ids.max()<len(xf)
+                resampled=yf.iloc[ids];assert int(resampled.sum())==int((resampled==0).sum())
+                check.update({'resampled_n':len(ids),'resampled_positive':int(resampled.sum()),'resampled_original_indices':xf.index[ids].tolist(),'class_weight':None,'sample_weight':'none'})
+            else:
+                check.update({'class_weight':'balanced' if name!='Gradient Boosting' else None,'sample_weight':'balanced' if name=='Gradient Boosting' else 'none','training_weight_negative':len(yf)/(2*sum(yf==0)),'training_weight_positive':len(yf)/(2*sum(yf==1))})
+            entry['fits'].append(check);s=pipe.predict_proba(xv)[:,1]
+            rows.append({'Model':name,'Strategy':'RandomOverSampler' if ros else 'Balanced weighting','Repeat':i//5+1,'Fold':i%5+1,'ROC-AUC':roc_auc_score(yv,s),'PR-AUC':average_precision_score(yv,s),'Positive count':int(yv.sum()),'Negative count':int((yv==0).sum()),'Validation n':len(yv)})
+        audit.append(entry)
+        print(('ROS' if ros else 'MAIN')+f' repeated CV {i+1}/50 complete',flush=True)
+    df=write('resampling_cv_fold_results.csv' if ros else 'repeated_cv_fold_results.csv',rows)
+    summary=[]
+    for name in NAMES:
+        d=df[df.Model==name];r={'Model':name,'Strategy':'RandomOverSampler' if ros else 'Balanced weighting','Validation folds':len(d)}
+        for metric in ['ROC-AUC','PR-AUC']:r[metric+' mean']=d[metric].mean();r[metric+' SD']=d[metric].std(ddof=1)
+        summary.append(r)
+    write('resampling_cv_summary.csv' if ros else 'repeated_cv_summary.csv',summary)
+    dump(OUT/('resampling_cv_fit_audit.json' if ros else 'repeated_cv_fit_audit.json'),audit);guard()
+def bootstrap():
+    guard();p=read('held_out_predictions.csv');y=p.label.to_numpy();perf=read('model_performance_revision.csv').set_index('Model')
+    metrics=['ROC-AUC','PR-AUC','Recall','Precision','Brier Score'];rows=[];receipts=[];rng=np.random.default_rng(SEED)
+    for b in range(2000):
+        idx=np.r_[rng.choice(np.flatnonzero(y==1),sum(y==1),replace=True),rng.choice(np.flatnonzero(y==0),sum(y==0),replace=True)]
+        receipts.append(idx.tolist())
+        for name in NAMES:
+            s=p[ABBR[name]+'_score'].to_numpy()[idx];r=old.score_row(name,y[idx],s)
+            rows.append({'Resample':b+1,'Model':name,**{k:r[k] for k in metrics},'Positive count':int(sum(y[idx]==1)),'Negative count':int(sum(y[idx]==0)),'Precision zero division applied':bool(sum(s>=.5)==0),'Undefined metric reason':'No positive predictions; precision defined as zero' if sum(s>=.5)==0 else 'none'})
+        if (b+1)%500==0:print('Bootstrap',b+1,'/2000',flush=True)
+    df=write('bootstrap_2000_raw.csv',rows);summary=[]
+    for name in NAMES:
+        point=old.score_row(name,y,p[ABBR[name]+'_score'].to_numpy());d=df[df.Model==name]
+        for metric in metrics:
+            assert point[metric]==perf.loc[name,metric],('Point estimate mismatch',name,metric)
+            lo,hi=np.quantile(d[metric],[.025,.975])
+            summary.append({'Model':name,'Metric':metric,'Point estimate':point[metric],'Lower 95% CI':lo,'Upper 95% CI':hi,'Resamples':len(d),'Zero division convention count':int(d['Precision zero division applied'].sum()) if metric=='Precision' else 0})
+    write('bootstrap_2000_summary.csv',summary)
+    np.savez_compressed(OUT/'bootstrap_paired_indices.npz',indices=np.array(receipts,dtype=np.int32))
+    guard()
+def resampling():
+    guard();Xtr,Xte,ytr,yte,X,y=data();rows=read('model_performance_revision.csv').assign(Strategy='Balanced weighting').to_dict('records');audits=[];params={};pred=read('held_out_predictions.csv')[['row_index_zero_based','label']].copy()
+    for name,base in old.build_models().items():
+        pipe=ros_model(base);pipe.fit(Xtr,ytr);check=verify_pre(pipe,name,Xtr);ids=pipe.named_steps['resample'].sample_indices_
+        assert set(Xtr.index[ids]).isdisjoint(Xte.index);check.update({'Model':name,'resampled_original_indices':Xtr.index[ids].tolist(),'train_indices':Xtr.index.tolist(),'class_weight':None,'sample_weight':'none'});audits.append(check)
+        s=pipe.predict_proba(Xte)[:,1];rows.append({**old.score_row(name,yte,s),'Strategy':'RandomOverSampler'});pred[ABBR[name]+'_score']=s
+        params[name]={k:repr(v) for k,v in pipe.get_params(deep=True).items()}
+    write('resampling_sensitivity_test.csv',rows);write('resampling_held_out_predictions.csv',pred);dump(OUT/'resampling_heldout_fit_audit.json',audits);dump(OUT/'resampling_actual_pipeline_parameters.json',params)
+    cv_run(ros=True)
+    write('resampling_sensitivity_cv.csv',pd.concat([read('repeated_cv_summary.csv'),read('resampling_cv_summary.csv')],ignore_index=True));guard()
+def costs():
+    guard();s=read('threshold_analysis_all_models.csv');out=[]
+    for ratio in [1,2,5,10,20,50,100]:
+        d=s.copy();d['FN:FP cost ratio']=ratio;d['Weighted cost']=ratio*d.FN+d.FP;d['Cost per test record']=d['Weighted cost']/len(read('held_out_predictions.csv'));d['Scenario']='hypothetical; not empirically measured mine-specific costs';out.append(d)
+    full=write('cost_ratio_sensitivity_full.csv',pd.concat(out));summary=[]
+    for (name,ratio),d in full.groupby(['Model','FN:FP cost ratio'],sort=False):
+        ties=d[d['Weighted cost']==d['Weighted cost'].min()].sort_values('Threshold');r=ties.iloc[0].to_dict();r['Number of tied cutoffs']=len(ties);r['All tied cutoffs']=';'.join(f'{v:.2f}' for v in ties.Threshold);r['Interpretation']='descriptive minimum on the held-out test set; not an optimal deployment threshold';summary.append(r)
+    write('cost_ratio_sensitivity_summary.csv',summary);guard()
+def reverify():
+    guard();p=read('held_out_predictions.csv');y=p.label.to_numpy();scores={n:p[ABBR[n]+'_score'].to_numpy() for n in NAMES}
+    temp=OUT/'statistical_reverification';temp.mkdir(exist_ok=True);old.OUT=temp
+    old.delong(y,scores);old.OUT=OUT
+    pd.testing.assert_frame_equal(read('delong_pairwise.csv'),pd.read_csv(temp/'delong_pairwise.csv',float_precision='round_trip'),check_exact=True)
+    attainable={n:old.attainable(scores[n]) for n in NAMES};common=set.intersection(*[set(v for t,v in a) for a in attainable.values()]);count=min(common,key=lambda n:(abs(n-150),n));mp={};table=[]
+    for n in NAMES:
+        t=next(t for t,c in attainable[n] if c==count);mp[n]=scores[n]>=t;table.append({'Model':n,'Decision cutoff':t,'Target alerts':150,'Common attained alerts':count,**old.counts(y,mp[n])})
+    pd.testing.assert_frame_equal(read('table5_matched_operating_point.csv'),pd.DataFrame(table),check_exact=True)
+    rng=np.random.default_rng(SEED);bi=rng.integers(0,len(y),(2000,len(y)));mc=[]
+    for a,b in itertools.combinations(NAMES,2):
+        ca=mp[a]==y;cb=mp[b]==y;bc=int(sum(ca&~cb));cc=int(sum(~ca&cb));diff=ca.astype(float)-cb.astype(float);boot=diff[bi].mean(axis=1)
+        mc.append({'Model A':a,'Model B':b,'Common alerts':count,'A correct B wrong':bc,'A wrong B correct':cc,'Accuracy difference A-B':float(diff.mean()),'Lower 95% CI':float(np.quantile(boot,.025)),'Upper 95% CI':float(np.quantile(boot,.975)),'Raw p':float(binomtest(bc,bc+cc,.5).pvalue) if bc+cc else 1.})
+    pd.testing.assert_frame_equal(read('mcnemar_pairwise.csv'),pd.DataFrame(old.holm(mc)),check_exact=True)
+    sp=scores['SVM']>=.5;svm=[]
+    for rule,pr in [('predict_proba >= 0.5',sp),('decision_function > 0',p.SVM_decision_function.to_numpy()>0),('predict',p.SVM_predict.to_numpy()==1)]:svm.append({'Rule':rule,'Agreement with proba rule':float(np.mean(pr==sp)),'Difference samples vs proba':int(sum(pr!=sp)),**old.counts(y,pr)})
+    pd.testing.assert_frame_equal(read('SVM_probability_check.csv'),pd.DataFrame(svm),check_exact=True)
+    dump(LOG/'statistical_reverification_v2.json',{'DeLong':'exact match','McNemar':'exact match','SVM':'exact match','matched_count':count,'Table5':'exact match','McNemar_accuracy_difference_CI':'retained first-stage unstratified paired 2000 bootstrap; distinct from new stratified primary metric intervals'})
+    versions={p:importlib.metadata.version(p) for p in ['numpy','pandas','scipy','scikit-learn','matplotlib','PyYAML','pytest','Pillow','imbalanced-learn']}
+    oldmeta=json.loads((OUT/'run_metadata.json').read_text());plan=json.loads((OUT/'supplementary_analysis_plan_v2.json').read_text())
+    dump(OUT/'run_metadata_v2.json',{'analysis_version':'major_revision_ml_stage2','completed_utc':datetime.now(timezone.utc).isoformat(),'python':platform.python_version(),'historical_frozen_v2_python':'3.12.13','historical_runtime_retested':False,'package_versions':versions,'main_heldout_predictions_sha256':sha(OUT/'held_out_predictions.csv'),'data_sha256':oldmeta['data_sha256'],'main_predictions_changed':False,'main_strategy':'class_weight=balanced for LR/RF/SVM; train-derived balanced sample weights for GB','plan':plan,'original_analysis_config':oldmeta['original_analysis_config'],'original_model_config':oldmeta['original_model_config'],'primary_parameters_file':'actual_pipeline_parameters.json','sensitivity_parameters_file':'resampling_actual_pipeline_parameters.json','limitations':'row-wise split; no time/site grouping or field validation; no empirical mine costs; no additional case coding'})
+    dump(LOG/'dependency_versions_v2.json',{'python':platform.python_version(),**versions});guard();print('Statistics, SVM rules, main predictions: exact match',flush=True)
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser();parser.add_argument('--stage',type=int,required=True);args=parser.parse_args()
+    {1:stage1,2:cv_run,3:bootstrap,4:resampling,5:costs,6:reverify}[args.stage]()

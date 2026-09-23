@@ -1,0 +1,56 @@
+from pathlib import Path
+import json,csv,hashlib,zipfile,math,os
+from datetime import datetime,timezone
+from docx import Document
+from openpyxl import load_workbook
+
+ROOT=Path(__file__).resolve().parents[1];R=ROOT/'results'
+source=ROOT.parent/'analysis_repository'
+manifest={}
+for folder in ['src','config','tests']:
+    for p in (source/folder).rglob('*'):
+        if p.is_file() and '__pycache__' not in p.parts:manifest[p.relative_to(source).as_posix()]=hashlib.sha256(p.read_bytes()).hexdigest()
+(ROOT/'logs/original_source_manifest.json').write_text(json.dumps(manifest,indent=2),encoding='utf-8')
+archive=ROOT.parent.parent/'PLOS_final_figure_code.zip'
+with zipfile.ZipFile(archive) as z:
+    for rel,sha in manifest.items():
+        key=next(n for n in z.namelist() if n.replace('\\','/').endswith('/analysis_repository/'+rel))
+        assert hashlib.sha256(z.read(key)).hexdigest()==sha
+        assert hashlib.sha256((ROOT/'code/original_baseline'/rel).read_bytes()).hexdigest()==sha
+
+payload=json.loads((R/'document_table_payload.json').read_text())
+doc_checks=[]
+for name in ['Table4','Table5']:
+    d=Document(ROOT/'tables'/f'{name}_revision.docx')
+    actual=[[c.text for c in row.cells] for row in d.tables[0].rows]
+    expected=[payload[name]['headers']]+payload[name]['rows']
+    assert actual==expected
+    for p in d.paragraphs:assert '\ufffd' not in p.text and '\u00ad' not in p.text
+    assert not list(d.styles['Title'].element.iter('{http://schemas.openxmlformats.org/wordprocessingml/2006/main}pBdr'))
+    doc_checks.append({'file':name+'_revision.docx','matched_cells':sum(map(len,expected))})
+wb=load_workbook(ROOT/'tables/S_Table_revision.xlsx',read_only=True,data_only=True)
+sheet_checks=[]
+for sheet in json.loads((R/'supplement_payload.json').read_text()):
+    ws=wb[sheet['name']];expected=[sheet['headers']]+sheet['rows']
+    actual=list(ws.iter_rows(min_row=1,max_row=len(expected),min_col=1,max_col=len(sheet['headers']),values_only=True))
+    checked=0
+    for a,b in zip(actual,expected):
+        for x,y in zip(a,b):
+            if isinstance(y,(int,float)):assert isinstance(x,(int,float)) and math.isclose(x,y,rel_tol=1e-12,abs_tol=1e-12),(sheet['name'],x,y)
+            else:assert x==y
+            checked+=1
+    sheet_checks.append({'sheet':sheet['name'],'data_rows':len(sheet['rows']),'matched_cells':checked})
+wb.close()
+before=json.loads((ROOT/'logs/manuscript_sha256_before.json').read_text())
+assert hashlib.sha256(Path(before['path']).read_bytes()).hexdigest()==before['sha256']
+oldmeta=json.loads((source/'outputs/metadata/dataset_validation.json').read_text())
+newmeta=json.loads((R/'run_metadata.json').read_text())
+assert oldmeta['data_sha256']==newmeta['data_sha256']
+
+response=Document(ROOT/'reports/Reviewer_response_model_revision.docx')
+text='\n'.join(p.text for p in response.paragraphs)
+for label in ['Reviewer 1 Comment 5','Reviewer 1 Comment 6','Reviewer 1 Comment 7','Reviewer 2 Comment 2','Reviewer 2 Comment 3','Reviewer 2 Comment 4','Reviewer 2 Comment 8','Reviewer 2 Comment 9']:assert label in text
+assert text.count('AUTHOR_INPUT_NEEDED')==5
+report={'checked_utc':datetime.now(timezone.utc).isoformat(),'original_code_config_tests_match_supplied_zip':True,'raw_data_sha256_matches_original_metadata':True,'manuscript_unchanged':True,'doc_tables':doc_checks,'workbook_sheets':sheet_checks,'response_sections':8,'reviewer2_exact_comment_placeholders':5,'all_artifact_checks_passed':True}
+(ROOT/'logs/artifact_verification.json').write_text(json.dumps(report,indent=2),encoding='utf-8')
+print(json.dumps(report,indent=2))

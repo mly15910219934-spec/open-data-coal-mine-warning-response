@@ -1,0 +1,45 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {Workbook, SpreadsheetFile} from '@oai/artifact-tool';
+const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
+const payload=JSON.parse(await fs.readFile(path.join(root,'results/supplement_payload.json'),'utf8'));
+const wb=Workbook.create();
+const renderDir=path.join(root,'logs/spreadsheet_previews');await fs.mkdir(renderDir,{recursive:true});
+function col(i){let s='';while(i>0){i--;s=String.fromCharCode(65+i%26)+s;i=Math.floor(i/26);}return s;}
+for(const data of payload){
+  const sh=wb.worksheets.add(data.name);sh.showGridLines=false;
+  const n=data.headers.length;const end=col(n);const total=data.rows.length+1;
+  sh.getRange(`A1:${end}${total}`).values=[data.headers,...data.rows];
+  sh.getRange(`A1:${end}${total}`).format.font={name:'Arial',size:10};
+  sh.getRange(`A1:${end}${total}`).format.verticalAlignment='center';
+  sh.getRange(`A1:${end}1`).format={fill:'#1F4E78',font:{name:'Arial',size:10,color:'#FFFFFF',bold:true},wrapText:true,horizontalAlignment:'center',rowHeight:46};
+  sh.getRange(`A2:${end}${total}`).format.rowHeight=23;
+  sh.getRange(`A1:${end}${total}`).format.columnWidth=18;
+  sh.getRange(`A1:A${total}`).format.columnWidth=25;
+  for(let j=0;j<n;j++){
+    const h=data.headers[j];const range=sh.getRange(`${col(j+1)}2:${col(j+1)}${total}`);
+    const numeric=data.rows.every(r=>typeof r[j]==='number');
+    if(numeric){range.setNumberFormat(/^(TP|FP|TN|FN|N|Positive|Bin|Fold|Folds|Random seed|Test samples|Positive samples|Target alerts|Common attained alerts|Warning workload|False alarms|Missed hazardous cases|Burden difference|Difference samples vs proba)$/.test(h)?'0':h.includes('percentage')?'0.00%':'0.000000');range.format.horizontalAlignment='right';}
+  }
+  sh.freezePanes.freezeRows(1);sh.freezePanes.freezeColumns(1);
+  const noteCol=col(n+2);
+  sh.getRange(`${noteCol}1`).values=[['Source: '+data.source]];
+  sh.getRange(`${noteCol}1`).format.columnWidth=85;
+  sh.getRange(`${noteCol}2`).values=[['Scores are decision cut-offs; alert counts describe the held-out test set.']];
+  if(data.name==='Threshold sweep')sh.getRange(`${noteCol}3`).values=[['False alarm rate = FP/(FP+TN); workload percentage stores a proportion and displays as %.']];
+}
+wb.recalculate();
+const checks=[];
+for(const data of payload){
+  checks.push((await wb.inspect({kind:'table',range:`'${data.name}'!A1:H6`,include:'values',tableMaxRows:6,tableMaxCols:8,maxChars:2000})).ndjson);
+  for(let start=1;start<=data.headers.length;start+=8){
+    const end=Math.min(start+7,data.headers.length);
+    const blob=await wb.render({sheetName:data.name,range:`${col(start)}1:${col(end)}12`,scale:1.5,format:'png'});
+    await fs.writeFile(path.join(renderDir,data.name.replaceAll(' ','_')+'_'+start+'.png'),new Uint8Array(await blob.arrayBuffer()));
+  }
+}
+checks.push((await wb.inspect({kind:'match',searchTerm:'#REF!|#DIV/0!|#VALUE!|#NAME\\?|#NUM!',options:{useRegex:true,maxResults:20},summary:'Formula error scan'})).ndjson);
+await fs.writeFile(path.join(root,'logs/spreadsheet_checks.txt'),checks.join('\n'));
+await (await SpreadsheetFile.exportXlsx(wb)).save(path.join(root,'tables/S_Table_revision.xlsx'));
+console.log('Exported S_Table_revision.xlsx with '+payload[0].rows.length+' threshold rows and '+payload.length+' sheets.');

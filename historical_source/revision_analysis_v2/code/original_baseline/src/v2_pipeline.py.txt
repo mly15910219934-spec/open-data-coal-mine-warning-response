@@ -1,0 +1,153 @@
+from __future__ import annotations
+
+import warnings
+from pathlib import Path
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from sklearn.base import clone
+from sklearn.calibration import CalibrationDisplay
+from sklearn.compose import ColumnTransformer
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    PrecisionRecallDisplay,
+    RocCurveDisplay,
+    accuracy_score,
+    average_precision_score,
+    brier_score_loss,
+    confusion_matrix,
+    f1_score,
+    precision_score,
+    recall_score,
+    roc_auc_score,
+)
+from sklearn.model_selection import RepeatedStratifiedKFold, cross_validate, train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.svm import SVC
+
+from .utils import ROOT, load_yaml, software_versions, write_json
+from .validate_data import load_dataset
+
+OUT = ROOT / "outputs_v2"
+STATEMENT = "This is a new reproducible configuration and is not claimed to be the exact configuration originally used for the manuscript."
+
+# Submission-compatible plot typography. This changes rendering only, not data,
+# fitted models, predictions, metrics, decision cut-offs, or random seeds.
+plt.rcParams["font.family"] = "Arial"
+
+
+def ensure_v2_dirs() -> None:
+    for relative in ["tables", "figures", "metadata", "robustness"]:
+        (OUT / relative).mkdir(parents=True, exist_ok=True)
+
+
+def configs() -> tuple[dict, dict]:
+    return load_yaml("config/frozen_analysis_v2.yaml"), load_yaml("config/frozen_model_parameters_v2.yaml")
+
+
+def build_preprocessor(scale_numeric: bool, analysis: dict) -> ColumnTransformer:
+    numeric = StandardScaler() if scale_numeric else "passthrough"
+    return ColumnTransformer([
+        ("categorical", OneHotEncoder(handle_unknown="ignore"), analysis["categorical_features"]),
+        ("numeric", numeric, analysis["numeric_features"]),
+    ])
+
+
+def build_models() -> dict[str, Pipeline]:
+    analysis, params = configs()
+    constructors = {
+        "Logistic Regression": (LogisticRegression(**params["logistic_regression"]), True),
+        "Random Forest": (RandomForestClassifier(**params["random_forest"]), False),
+        "Gradient Boosting": (GradientBoostingClassifier(**params["gradient_boosting"]), False),
+        "SVM": (SVC(**params["support_vector_machine"]), True),
+    }
+    return {name: Pipeline([("preprocess", build_preprocessor(scale, analysis)), ("model", estimator)]) for name, (estimator, scale) in constructors.items()}
+
+
+def split_data():
+    analysis, _ = configs(); X, y = load_dataset()
+    if X.isna().any().any() or y.isna().any():
+        raise ValueError("Missing values found; frozen v2 applies no imputation.")
+    split = analysis["split"]
+    return (*train_test_split(X, y, test_size=split["test_fraction"], stratify=y, random_state=split["random_state"]), X, y)
+
+
+def metric_row(name: str, y_true, score, cutoff: float = 0.5) -> dict:
+    pred = score >= cutoff; tn, fp, fn, tp = confusion_matrix(y_true, pred).ravel()
+    return {"model": name, "threshold": cutoff, "accuracy": accuracy_score(y_true, pred), "precision": precision_score(y_true, pred, zero_division=0), "recall": recall_score(y_true, pred), "f1": f1_score(y_true, pred), "roc_auc": roc_auc_score(y_true, score), "pr_auc": average_precision_score(y_true, score), "tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp), "warning_workload": int(tp + fp), "false_alarms": int(fp), "missed_hazardous_cases": int(fn)}
+
+
+def fit_held_out():
+    ensure_v2_dirs(); analysis, _ = configs()
+    X_train, X_test, y_train, y_test, X, y = split_data()
+    fitted, scores, rows = {}, {}, []
+    for name, model in build_models().items():
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", FutureWarning); model.fit(X_train, y_train)
+        score = model.predict_proba(X_test)[:, 1]
+        fitted[name] = model; scores[name] = score; rows.append(metric_row(name, y_test, score))
+    table = pd.DataFrame(rows); table.to_csv(OUT / "tables/model_performance.csv", index=False)
+    write_json(OUT / "metadata/model_parameters.json", {name: pipe.named_steps["model"].get_params(deep=True) for name, pipe in fitted.items()})
+    write_json(OUT / "metadata/run_metadata.json", {"configuration_statement": STATEMENT, "software_versions": software_versions(), "analysis_config": analysis, "train_records": len(X_train), "test_records": len(X_test), "test_positive": int(y_test.sum()), "test_negative": int((y_test == 0).sum()), "score_method": "predict_proba[:, 1]", "sampling": "none", "missing_value_handling": "no imputation; validated absent"})
+    return X_train, X_test, y_train, y_test, X, y, fitted, scores, table
+
+
+def generate_main_figures(y_test, scores) -> None:
+    fig, axes = plt.subplots(1, 2, figsize=(10, 4.5))
+    for name, score in scores.items():
+        RocCurveDisplay.from_predictions(y_test, score, name=name, ax=axes[0]); PrecisionRecallDisplay.from_predictions(y_test, score, name=name, ax=axes[1])
+    axes[0].plot([0, 1], [0, 1], "--", color="0.5", linewidth=1); axes[1].axhline(np.mean(y_test), linestyle="--", color="0.5", linewidth=1)
+    axes[0].set_title("ROC curves"); axes[1].set_title("Precision-recall curves"); axes[0].legend(loc="lower right", fontsize=8); axes[1].legend(loc="upper right", fontsize=8)
+    fig.tight_layout(); fig.savefig(OUT / "figures/roc_pr_curves.png", dpi=300); plt.close(fig)
+
+
+def threshold_analysis(y_test, score) -> pd.DataFrame:
+    analysis, _ = configs(); rows = []
+    for cutoff in analysis["thresholds"]:
+        row = metric_row("Logistic Regression", y_test, score, cutoff)
+        rows.append({k: row[k] for k in ["model", "threshold", "accuracy", "precision", "recall", "f1", "tn", "fp", "fn", "tp", "warning_workload", "false_alarms", "missed_hazardous_cases"]})
+    table = pd.DataFrame(rows); table.to_csv(OUT / "tables/logistic_regression_threshold_sensitivity.csv", index=False)
+    fig, ax1 = plt.subplots(figsize=(7, 4.5)); ax2 = ax1.twinx()
+    ax1.plot(table.threshold, table.warning_workload, marker="o", color="#1f77b4", label="Warning workload"); ax2.plot(table.threshold, table.missed_hazardous_cases, marker="s", color="#c44e52", label="Missed hazardous cases")
+    ax1.set(xlabel="Decision cut-off", ylabel="Warning workload"); ax2.set_ylabel("Missed hazardous cases"); lines = ax1.lines + ax2.lines; ax1.legend(lines, [x.get_label() for x in lines], loc="center right")
+    fig.tight_layout(); fig.savefig(OUT / "figures/threshold_workload.png", dpi=300); plt.close(fig)
+    return table
+
+
+def bootstrap_intervals(y_true, score, iterations: int, seed: int) -> dict:
+    y = np.asarray(y_true); score = np.asarray(score); rng = np.random.default_rng(seed)
+    samples = {k: [] for k in ["roc_auc", "pr_auc", "recall", "precision"]}
+    for _ in range(iterations):
+        idx = rng.integers(0, len(y), len(y)); ys, ss = y[idx], score[idx]
+        if np.unique(ys).size < 2: continue
+        pred = ss >= 0.5
+        samples["roc_auc"].append(roc_auc_score(ys, ss)); samples["pr_auc"].append(average_precision_score(ys, ss)); samples["recall"].append(recall_score(ys, pred)); samples["precision"].append(precision_score(ys, pred, zero_division=0))
+    point = {"roc_auc": roc_auc_score(y, score), "pr_auc": average_precision_score(y, score), "recall": recall_score(y, score >= .5), "precision": precision_score(y, score >= .5, zero_division=0)}
+    return {k: {"estimate": float(point[k]), "lower_95": float(np.quantile(v, .025)), "upper_95": float(np.quantile(v, .975)), "successful_resamples": len(v)} for k, v in samples.items()}
+
+
+def robustness(X, y, y_test, fitted, scores) -> None:
+    analysis, _ = configs(); rcfg = analysis["robustness"]
+    cv = RepeatedStratifiedKFold(n_splits=rcfg["folds"], n_repeats=rcfg["repeats"], random_state=rcfg["random_state"])
+    rows = []
+    for name, model in build_models().items():
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", FutureWarning); result = cross_validate(model, X, y, cv=cv, scoring={"roc_auc": "roc_auc", "pr_auc": "average_precision"}, n_jobs=1)
+        rows.append({"model": name, "roc_auc_mean": result["test_roc_auc"].mean(), "roc_auc_sd": result["test_roc_auc"].std(ddof=1), "pr_auc_mean": result["test_pr_auc"].mean(), "pr_auc_sd": result["test_pr_auc"].std(ddof=1), "fold_results": len(result["test_roc_auc"])})
+    pd.DataFrame(rows).to_csv(OUT / "robustness/repeated_cv_summary.csv", index=False)
+    intervals = {name: bootstrap_intervals(y_test, score, rcfg["bootstrap_iterations"], rcfg["bootstrap_random_state"]) for name, score in scores.items()}
+    write_json(OUT / "robustness/bootstrap_intervals.json", intervals)
+    lr_score = scores["Logistic Regression"]; brier = brier_score_loss(y_test, lr_score); write_json(OUT / "robustness/logistic_regression_calibration.json", {"brier_score": brier, "interpretation": "Decision scores are not treated as absolute hazard probabilities."})
+    fig, ax = plt.subplots(figsize=(6, 5)); CalibrationDisplay.from_predictions(y_test, lr_score, n_bins=10, strategy="quantile", name="Logistic Regression", ax=ax); ax.set_title(""); ax.set_xlabel("Mean model decision score"); ax.set_ylabel("Observed positive fraction"); fig.tight_layout(); fig.savefig(OUT / "robustness/logistic_regression_calibration_curve.png", dpi=300); plt.close(fig)
+
+
+def run_all_v2() -> None:
+    X_train, X_test, y_train, y_test, X, y, fitted, scores, _ = fit_held_out()
+    generate_main_figures(y_test, scores); threshold_analysis(y_test, scores["Logistic Regression"]); robustness(X, y, y_test, fitted, scores)
+
+
+if __name__ == "__main__":
+    run_all_v2()

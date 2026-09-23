@@ -1,0 +1,11 @@
+import pandas as pd
+from src.utils import ROOT
+
+
+def test_model_output_identities():
+    df = pd.read_csv(ROOT / "outputs_v2/tables/model_performance.csv")
+    assert not any(str(c).startswith("Unnamed") for c in df.columns)
+    assert set(df.model) == {"Logistic Regression", "Random Forest", "Gradient Boosting", "SVM"}
+    assert (df.tp + df.fn == 51).all()
+    assert (df.warning_workload == df.tp + df.fp).all()
+    assert (df.missed_hazardous_cases == df.fn).all()

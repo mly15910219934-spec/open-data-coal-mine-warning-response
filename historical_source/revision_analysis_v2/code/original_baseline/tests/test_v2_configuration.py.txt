@@ -1,0 +1,24 @@
+import json
+
+from src.utils import ROOT, load_yaml
+from src.v2_pipeline import build_models
+
+
+def test_frozen_configuration_and_exported_parameters():
+    analysis = load_yaml("config/frozen_analysis_v2.yaml")
+    assert analysis["split"] == {"train_fraction": 0.70, "test_fraction": 0.30, "stratify": True, "random_state": 42}
+    assert analysis["preprocessing"]["resampling"] == "none"
+    assert "not claimed to be the exact configuration" in analysis["required_statement"]
+    exported = json.loads((ROOT / "outputs_v2/metadata/model_parameters.json").read_text(encoding="utf-8"))
+    current = {name: pipe.named_steps["model"].get_params(deep=True) for name, pipe in build_models().items()}
+    assert exported == current
+
+
+def test_run_metadata_acceptance_values():
+    metadata = json.loads((ROOT / "outputs_v2/metadata/run_metadata.json").read_text(encoding="utf-8"))
+    assert metadata["test_records"] == 776
+    assert metadata["test_positive"] == 51
+    assert metadata["test_negative"] == 725
+    assert metadata["sampling"] == "none"
+    assert metadata["missing_value_handling"] == "no imputation; validated absent"
+

@@ -1,0 +1,116 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import shutil
+from pathlib import Path
+
+from PIL import Image, ImageChops
+
+
+ROOT = Path(__file__).resolve().parents[2]
+OUT = ROOT / "PLOS_ONE_submission_ready" / "figures"
+RELEASE = ROOT / "PLOS_ONE_submission_ready" / "public_release"
+INPUT = ROOT / "work" / "submission_ready_final" / "input_figures" / "figures"
+
+
+def digest(path: Path) -> str:
+    h = hashlib.sha256()
+    with path.open("rb") as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def trim_box(image: Image.Image, threshold: int = 250, padding: int = 12) -> tuple[int, int, int, int]:
+    rgb = image.convert("RGB")
+    delta = ImageChops.difference(rgb, Image.new("RGB", rgb.size, "white")).convert("L")
+    mask = delta.point(lambda x: 255 if x > 5 else 0)
+    box = mask.getbbox() or (0, 0, rgb.width, rgb.height)
+    return (
+        max(0, box[0] - padding),
+        max(0, box[1] - padding),
+        min(rgb.width, box[2] + padding),
+        min(rgb.height, box[3] + padding),
+    )
+
+
+def convert(source: Path, destination: Path) -> dict:
+    with Image.open(source) as opened:
+        source_mode = opened.mode
+        source_size = opened.size
+        source_dpi = opened.info.get("dpi")
+        if "A" in opened.getbands():
+            image = Image.new("RGB", opened.size, "white")
+            image.paste(opened.convert("RGBA"), mask=opened.convert("RGBA").getchannel("A"))
+        else:
+            image = opened.convert("RGB")
+        box = trim_box(image)
+        image = image.crop(box)
+        scale = min(1.0, 2250 / image.width, 2625 / image.height)
+        if scale < 1.0:
+            image = image.resize(
+                (round(image.width * scale), round(image.height * scale)),
+                Image.Resampling.LANCZOS,
+            )
+        if image.width < 789:
+            scale = 789 / image.width
+            image = image.resize((789, round(image.height * scale)), Image.Resampling.LANCZOS)
+        image.save(destination, format="TIFF", compression="tiff_lzw", dpi=(300, 300))
+        final_size = image.size
+    return {
+        "file": destination.name,
+        "source": str(source.resolve()),
+        "source_size_px": list(source_size),
+        "source_mode": source_mode,
+        "source_dpi": source_dpi,
+        "crop_box_px": list(box),
+        "final_size_px": list(final_size),
+        "dpi": 300,
+        "physical_width_cm": round(final_size[0] / 300 * 2.54, 3),
+        "physical_height_cm": round(final_size[1] / 300 * 2.54, 3),
+        "mode": "RGB",
+        "alpha": False,
+        "flattened": True,
+        "compression": "LZW",
+        "file_size_bytes": destination.stat().st_size,
+        "sha256": digest(destination),
+    }
+
+
+def main() -> None:
+    OUT.mkdir(parents=True, exist_ok=True)
+    preview_dir = ROOT / "work" / "submission_ready_final" / "figure_previews"
+    preview_dir.mkdir(parents=True, exist_ok=True)
+    sources = {
+        "Fig1.tif": INPUT / "figure1.png",
+        "Fig2.tif": INPUT / "figure2.png",
+        "Fig3.tif": INPUT / "figure3.png",
+        "Fig4.tif": RELEASE / "outputs_v2" / "figures" / "roc_pr_curves.png",
+        "Fig5.tif": RELEASE / "outputs_v2" / "figures" / "threshold_workload.png",
+        "S1_Fig.tif": RELEASE / "outputs_v2" / "robustness" / "logistic_regression_calibration_curve.png",
+    }
+    metadata = [convert(source, OUT / name) for name, source in sources.items()]
+    for name in sources:
+        with Image.open(OUT / name) as image:
+            image.convert("RGB").save(preview_dir / f"{Path(name).stem}.png")
+    shutil.copy2(
+        RELEASE / "outputs_v2" / "figures" / "roc_pr_curves.png",
+        RELEASE / "outputs" / "final_figures" / "roc_pr_curves.png",
+    )
+    shutil.copy2(
+        RELEASE / "outputs_v2" / "figures" / "threshold_workload.png",
+        RELEASE / "outputs" / "final_figures" / "threshold_workload.png",
+    )
+    shutil.copy2(
+        RELEASE / "outputs_v2" / "robustness" / "logistic_regression_calibration_curve.png",
+        RELEASE / "outputs" / "final_figures" / "logistic_regression_calibration_curve.png",
+    )
+    (ROOT / "work" / "submission_ready_final" / "figure_qc_metadata.json").write_text(
+        json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
+    )
+    print(json.dumps(metadata, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()

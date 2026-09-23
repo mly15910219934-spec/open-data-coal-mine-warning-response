@@ -1,0 +1,21 @@
+$ErrorActionPreference='Stop'
+$revisionRoot=Split-Path $PSScriptRoot -Parent
+$wps=New-Object -ComObject kwps.Application
+$wps.Visible=$false
+try {
+  foreach($relative in @('tables\Table4_revision.docx','tables\Table5_revision.docx','reports\Reviewer_response_model_revision.docx')) {
+    $inputPath=Join-Path $revisionRoot $relative
+    $stem=[System.IO.Path]::GetFileNameWithoutExtension($inputPath)
+    $renderDir=Join-Path $revisionRoot ('logs\render_'+$stem)
+    New-Item -ItemType Directory -Path $renderDir -Force | Out-Null
+    $pdfPath=Join-Path $renderDir ($stem+'.pdf')
+    $doc=$wps.Documents.Open($inputPath,$false,$true)
+    try {$doc.ExportAsFixedFormat($pdfPath,17)} finally {$doc.Close($false);[void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($doc)}
+    & 'AUTHOR_LOCAL_PATH_REQUIRED' -scale-to 1600 -png $pdfPath (Join-Path $renderDir 'page')
+    if($LASTEXITCODE -ne 0){throw 'PDF page rendering failed'}
+    Write-Output $pdfPath
+  }
+} finally {
+  # Close only documents opened here; preserve any pre-existing user session.
+  [void][System.Runtime.InteropServices.Marshal]::ReleaseComObject($wps)
+}

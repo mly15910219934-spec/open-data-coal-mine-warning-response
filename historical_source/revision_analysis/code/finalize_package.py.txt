@@ -1,0 +1,81 @@
+from pathlib import Path
+import csv,json,hashlib,zipfile,os,ast
+ROOT=Path(__file__).resolve().parents[1];R=ROOT/'results';REPORT=ROOT/'reports'
+def load(file):
+    with file.open(encoding='utf-8-sig',newline='') as f:return list(csv.DictReader(f))
+def table(headers,rows):return '\n'.join(['| '+' | '.join(headers)+' |','| '+' | '.join(['---']*len(headers))+' |']+['| '+' | '.join(map(str,r))+' |' for r in rows])
+artifact=json.loads((ROOT/'logs/artifact_verification.json').read_text())
+assert artifact['all_artifact_checks_passed']
+tests=(ROOT/'logs/revision_tests.log').read_text();originaltests=(ROOT/'logs/original_tests.log').read_text()
+assert '11 passed' in tests and '8 passed' in originaltests
+baseline=json.loads((ROOT/'logs/baseline_comparison.json').read_text());assert baseline['passed']
+meta=json.loads((R/'run_metadata.json').read_text())
+mapping=[
+['Data download','code/original_baseline/src/download_data.py','main','UCI archive and data-access hash'],
+['Data reading','code/original_baseline/src/validate_data.py','load_dataset','ARFF to predictors and binary class'],
+['Preprocessing','code/original_baseline/src/v2_pipeline.py','build_preprocessor','ColumnTransformer and training-only encoding/scaling'],
+['Model constructors','code/original_baseline/src/v2_pipeline.py','build_models','Original hyperparameters and Pipeline'],
+['Data split','code/original_baseline/src/v2_pipeline.py','split_data','Stratified 70:30 seed 42'],
+['Original training/evaluation and Table 4 values','code/original_baseline/src/v2_pipeline.py','fit_held_out / metric_row','model_performance.csv'],
+['Original ROC and PR curves','code/original_baseline/src/v2_pipeline.py','generate_main_figures','roc_pr_curves.png'],
+['Original calibration','code/original_baseline/src/v2_pipeline.py','robustness','logistic_regression_calibration_curve.png'],
+['Original Table 5 values','code/original_baseline/src/v2_pipeline.py','threshold_analysis','LR seven-threshold CSV'],
+['Revised training and evaluation','code/run_revision.py','fit / main','Train-only GB weighting and new CSVs'],
+['New figure rendering','code/plot_revision.py','export and plot blocks','Fig4–Fig7, matched-burden figure'],
+['Word tables and response draft','code/build_reports.py','table and document builders','Table4_revision.docx / Table5_revision.docx'],
+['Supplement workbook','code/build_supplement.mjs','Workbook authoring','S_Table_revision.xlsx']]
+(REPORT/'original_code_map.md').write_text('# Original and revision code map\n\n'+table(['Function','File','Entry point','Output or responsibility'],mapping)+'\n\nThe original source/config/test files have matching SHA-256 hashes against the supplied ZIP. The revision imports the original model/preprocessing/split functions and does not overwrite them.\n',encoding='utf-8')
+
+# Append a per-cell check of the original seven LR cut-offs to the replacement map.
+source=json.loads((ROOT/'logs/manuscript_baseline_tables.json').read_text())
+sweep=load(R/'threshold_analysis_all_models.csv')
+lr={float(r['Threshold']):r for r in sweep if r['Model']=='Logistic Regression'}
+checks=[]
+for row in source['tables'][4]['rows'][1:]:
+    cutoff=float(row[0]);new=lr[cutoff]
+    for i,key in enumerate(['Precision','Recall','F1-score','Warning workload','False alarms','Missed hazardous cases'],1):
+        val=float(new[key]);old=float(row[i]);assert abs(val-old)<= (.000500001 if i<=3 else 0)
+        checks.append([row[0],key,row[i],f'{val:.3f}' if i<=3 else str(int(val)),'unchanged at manuscript precision'])
+mapfile=R/'result_replacement_map.md';text=mapfile.read_text(encoding='utf-8');marker='\n\n## Original LR thresholds checked against revision outputs\n\n'
+text=text.split(marker)[0]+marker+table(['Cut-off','Metric','Old Table 5','Revision sweep','Result'],checks)+'\n'
+mapfile.write_text(text,encoding='utf-8')
+
+qc=load(R/'figure_quality_checks.csv')
+summary='# Final quality report\n\nThe requested machine-learning rerun and review artifacts are complete. Main-manuscript insertion remains pending author approval, as requested. Reviewer 2 exact comment wording/number mapping remains an author-input item in the response draft.\n\n'
+summary+=table(['Check','Result','Evidence'],[
+['Original baseline','PASS: 82 manuscript checks','logs/baseline_comparison.json'],
+['Original automated tests','8 passed','logs/original_tests.log'],
+['Revision automated tests','11 passed','logs/revision_tests.log'],
+['DOCX table values','75 cells matched','logs/artifact_verification.json'],
+['XLSX supplement','All six sheets matched; full 396-row sweep','logs/artifact_verification.json'],
+['Figure source curves','Recomputed ROC/PR coordinates match saved predictions','code/test_revision.py'],
+['Seeds and versions','Recorded; seed 42; Python '+meta['python'],'results/run_metadata.json'],
+['Train/test separation','Disjoint row indices; CV excludes held-out test set','results/split_assignments.csv; cross_validation_fit_audit.json'],
+['Preprocessing and weights','Training-only fitting verified','training_weight_audit.csv; revision tests'],
+['Original source preservation','SHA-256 matches supplied ZIP','logs/original_source_manifest.json'],
+['Data preservation','Downloaded ARFF SHA-256 matches original data metadata','results/run_metadata.json'],
+['Main manuscript','Unchanged SHA-256; new GB results not inserted','logs/manuscript_sha256_before.json'],
+['Unverified scientific claims','No field validation, dispatch capacity or coding reliability added','Methods/Results proposal and response draft'],
+['Visual QA','All five unique plots, six workbook tabs and five DOCX pages inspected','Local rendering logs and previews'],
+['Document rendering','WPS PDF export plus Poppler page images','Packaged LibreOffice renderer was attempted; LibreOffice was unavailable'],
+['Public upload','Not performed','Author-controlled next step']])
+summary+='\n\n## Figure exports\n\n'+table(['File','Pixels','DPI','Mode','Size MB','Technical check'],[[r['File'],r['Pixels'],r['DPI'],r['Mode'],f"{float(r['Size MB']):.3f}",r['PASS']] for r in qc])
+summary+='\n\n## Interpretation and pending manuscript update\n\nThe exact common alert burden nearest 150 is '+str(meta['common_alert_count_table5'])+'. Score ties are retained and the numerical cut-offs differ across models. This is a test-set comparison and does not establish mine-specific response capacity. The current main manuscript is deliberately not synchronized with the revised GB results; all replacements are proposed in results/result_replacement_map.md. The proposed text and tables agree with the revised calculations. Figures are renumbered according to the current request and require corresponding manuscript cross-reference updates.\n\nFive-fold CV is evaluated only within the 70% training subset. It is not the old 5 x 10 repeated CV on the full dataset. This design change is explicit in the methods proposal and metadata.\n\nNo record-level preprocessing or weight leakage was detected in the tested code. The absence of site/time grouping identifiers limits assessment of dependence between records and prevents claims of external or temporal validation.\n\nThe original settings emit library deprecation warnings. They were retained to preserve baseline comparability and are recorded in logs. No hyperparameter or seed search was performed. No SMOTE, extra model, feature selection or human-coder result was introduced by this scoped rerun.\n'
+(REPORT/'final_quality_report.md').write_text(summary,encoding='utf-8')
+
+exclude_dirs={'.venv','node_modules','__pycache__','.pytest_cache','render_Table4','render_Table4_revision','render_Table5_revision','render_Reviewer_response_model_revision','spreadsheet_previews'}
+files=[]
+for folder,dirs,names in os.walk(ROOT,followlinks=False):
+    dirs[:]=[d for d in dirs if d not in exclude_dirs and not d.endswith('.egg-info')]
+    for name in names:
+        p=Path(folder)/name
+        if name.endswith(('.zip','.pyc','.inspect.ndjson')) or name=='package_checksums.sha256':continue
+        files.append(p)
+checksums='\n'.join(hashlib.sha256(p.read_bytes()).hexdigest()+'  '+p.relative_to(ROOT).as_posix() for p in sorted(files))+'\n'
+(ROOT/'package_checksums.sha256').write_text(checksums,encoding='utf-8')
+files.append(ROOT/'package_checksums.sha256')
+out=ROOT/'revision_analysis_package.zip'
+with zipfile.ZipFile(out,'w',compression=zipfile.ZIP_DEFLATED,compresslevel=6) as z:
+    for p in files:z.write(p,arcname='revision_analysis/'+p.relative_to(ROOT).as_posix())
+with zipfile.ZipFile(out) as z:assert z.testzip() is None
+print(json.dumps({'package':str(out),'bytes':out.stat().st_size,'files':len(files)},indent=2))
