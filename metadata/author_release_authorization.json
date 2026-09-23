@@ -1,0 +1,18 @@
+{
+  "license": "MIT",
+  "authors": [
+    "Yuan Liu",
+    "Kebin Miao",
+    "Liya Zhang",
+    "Wanbo Dai",
+    "Hongyan Li",
+    "Jie Meng",
+    "Jianghua Miao",
+    "Lianyu Mu"
+  ],
+  "version": "2.1.0",
+  "doi": "10.5281/zenodo.21423640",
+  "doi_type": "concept",
+  "basis": "explicit author confirmation in this task",
+  "manuscript_statement": "This release corresponds to the revised manuscript submitted to PLOS ONE."
+}

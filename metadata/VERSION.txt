@@ -1,0 +1,14 @@
+Version:
+2.1.0
+
+This release corresponds to the revised manuscript submitted to PLOS ONE.
+
+Changes from Version 2.0.0:
+- Updated reproducibility documentation.
+- Added revised manuscript figure-generation scripts.
+- Improved execution workflow.
+- Maintained original analysis pipeline and reported results.
+
+Concept DOI: 10.5281/zenodo.21423640
+The author confirmed that this is the concept DOI, not a Version 2.0.0-specific DOI.
+No version-specific DOI is invented in this package.

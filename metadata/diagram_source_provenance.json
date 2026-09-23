@@ -1,0 +1,38 @@
+{
+  "source_sha256": "ebfb350a60b99b75d8e56400a806eaac631e972e432167751906b2936ff7ced0",
+  "historical_export_source_hash_matches": true,
+  "source_export_description": "Historical export report states PowerPoint PDF to Poppler 600 dpi; not rerendered in this packaging run.",
+  "editorial_note": "Supplied slide 2 has Cohen’s κappa assessment, not the exact label Cohen’s κ assessment. Original figure retained unchanged.",
+  "files": [
+    {
+      "file": "Figure1_Warning_Response_Framework.tiff",
+      "format": "TIFF",
+      "size": [
+        7500,
+        7000
+      ],
+      "dpi": [
+        600.0,
+        600.0
+      ],
+      "mode": "RGB",
+      "sha256": "6f932cb2d00483aea204431c10d8224eefe1d3ae0d78a4c906ef53fd52095877",
+      "reopen": true
+    },
+    {
+      "file": "Figure2_PWDAVF_Coding_Procedure.tiff",
+      "format": "TIFF",
+      "size": [
+        7500,
+        7000
+      ],
+      "dpi": [
+        600.0,
+        600.0
+      ],
+      "mode": "RGB",
+      "sha256": "d1105d8f753704c8f388f2c32bdc0166c8c46fe44d79d40a1b5dafed1bf2e942",
+      "reopen": true
+    }
+  ]
+}

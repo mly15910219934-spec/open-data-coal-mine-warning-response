@@ -1,0 +1,322 @@
+{
+  "source": "PLOS_ONE_Manuscript.docx (historical author-supplied baseline extraction)",
+  "tables": [
+    {
+      "table_index": 1,
+      "rows": [
+        [
+          "Component",
+          "Purpose",
+          "Output"
+        ],
+        [
+          "Stage 1: Public-data warning test",
+          "Generate warning outputs from public coal-mine hazard data.",
+          "Dataset profile, model performance, ROC/PR curves, workload analysis"
+        ],
+        [
+          "Stage 2: Response-chain coding",
+          "Organize warning outputs into six-step response elements.",
+          "P-W-D-A-V-F coding categories and evidence examples"
+        ],
+        [
+          "Stage 3: Public case review",
+          "Assess a non-exhaustive purposive sample of 32 public records for visible response, verification, and feedback links.",
+          "P-W-D-A-V-F summary and interpretation limits"
+        ],
+        [
+          "Interpretation limits",
+          "Avoid using public evidence as field validation.",
+          "Interpretation limits and validation needs"
+        ]
+      ]
+    },
+    {
+      "table_index": 2,
+      "rows": [
+        [
+          "Item",
+          "Value"
+        ],
+        [
+          "Dataset",
+          "UCI Seismic-bumps"
+        ],
+        [
+          "Application proxy",
+          "Coal-mine seismic-hazard warning"
+        ],
+        [
+          "Total records",
+          "2584"
+        ],
+        [
+          "Features",
+          "18"
+        ],
+        [
+          "Hazardous cases",
+          "170"
+        ],
+        [
+          "Negative cases",
+          "2414"
+        ],
+        [
+          "Held-out test set",
+          "776"
+        ],
+        [
+          "Test positive cases",
+          "51"
+        ],
+        [
+          "Test negative cases",
+          "725"
+        ]
+      ]
+    },
+    {
+      "table_index": 3,
+      "rows": [
+        [
+          "Code",
+          "Element",
+          "Example evidence"
+        ],
+        [
+          "P",
+          "Perception input",
+          "Sensor, video, positioning, equipment, process, or manual-report evidence"
+        ],
+        [
+          "W",
+          "Warning interpretation",
+          "Alarm, model output, risk grading, diagnosis, or warning-release evidence"
+        ],
+        [
+          "D",
+          "Task dispatch",
+          "Work order, dispatch instruction, withdrawal decision, emergency linkage, or regulatory instruction"
+        ],
+        [
+          "A",
+          "Response or mitigation action",
+          "Ventilation adjustment, power cut, evacuation, support, repair, inspection, rescue, or maintenance action"
+        ],
+        [
+          "V",
+          "Verification or closure",
+          "Reinspection, acceptance record, residual-risk check, closure condition, or recovery confirmation"
+        ],
+        [
+          "F",
+          "Feedback update",
+          "Rule update, checklist revision, model adjustment, workflow review, regulatory feedback, or training update"
+        ]
+      ]
+    },
+    {
+      "table_index": 4,
+      "rows": [
+        [
+          "Model",
+          "Acc.",
+          "Prec.",
+          "Recall",
+          "F1",
+          "ROC-AUC",
+          "PR-AUC",
+          "Counts(TP/FP/FN)",
+          "Workload"
+        ],
+        [
+          "RF",
+          "0.921",
+          "0.308",
+          "0.157",
+          "0.208",
+          "0.762",
+          "0.244",
+          "8/18/43",
+          "26"
+        ],
+        [
+          "LR",
+          "0.803",
+          "0.193",
+          "0.627",
+          "0.295",
+          "0.783",
+          "0.214",
+          "32/134/19",
+          "166"
+        ],
+        [
+          "GB",
+          "0.927",
+          "0.200",
+          "0.039",
+          "0.066",
+          "0.745",
+          "0.189",
+          "2/8/49",
+          "10"
+        ],
+        [
+          "SVM",
+          "0.934",
+          "0.000",
+          "0.000",
+          "0.000",
+          "0.696",
+          "0.170",
+          "0/0/51",
+          "0"
+        ]
+      ]
+    },
+    {
+      "table_index": 5,
+      "rows": [
+        [
+          "Cut-off",
+          "Precision",
+          "Recall",
+          "F1",
+          "Warningworkload",
+          "Falsealarms",
+          "Missedcases"
+        ],
+        [
+          "0.1",
+          "0.066",
+          "1.000",
+          "0.124",
+          "772",
+          "721",
+          "0"
+        ],
+        [
+          "0.2",
+          "0.079",
+          "1.000",
+          "0.147",
+          "643",
+          "592",
+          "0"
+        ],
+        [
+          "0.3",
+          "0.103",
+          "0.882",
+          "0.184",
+          "439",
+          "394",
+          "6"
+        ],
+        [
+          "0.4",
+          "0.138",
+          "0.686",
+          "0.230",
+          "254",
+          "219",
+          "16"
+        ],
+        [
+          "0.5",
+          "0.193",
+          "0.627",
+          "0.295",
+          "166",
+          "134",
+          "19"
+        ],
+        [
+          "0.6",
+          "0.237",
+          "0.529",
+          "0.327",
+          "114",
+          "87",
+          "24"
+        ],
+        [
+          "0.7",
+          "0.253",
+          "0.392",
+          "0.308",
+          "79",
+          "59",
+          "31"
+        ]
+      ]
+    },
+    {
+      "table_index": 6,
+      "rows": [
+        [
+          "Response-chain element",
+          "Clear support",
+          "Partial support",
+          "Not identifiable"
+        ],
+        [
+          "P: Perception input",
+          "19",
+          "13",
+          "0"
+        ],
+        [
+          "W: Warning interpretation",
+          "4",
+          "28",
+          "0"
+        ],
+        [
+          "D: Task dispatch",
+          "32",
+          "0",
+          "0"
+        ],
+        [
+          "A: Response or mitigation action",
+          "32",
+          "0",
+          "0"
+        ],
+        [
+          "V: Verification or closure",
+          "31",
+          "1",
+          "0"
+        ],
+        [
+          "F: Feedback update",
+          "31",
+          "1",
+          "0"
+        ]
+      ]
+    }
+  ],
+  "captions": [
+    "Fig 1. Research logic and analytical scope of the open-data evaluation framework for intelligent coal mines.",
+    "Fig 1 outlines the overall research logic. The Methods section then separates the framework into two connected representations: a system-level framework linking perception, warning analysis, and response records, and an event-level sequence for coding the P-W-D-A-V-F response chain.",
+    "Table 1. Three-step research design based on public data.",
+    "Fig 2 links the warning model, mine-safety data, and response records within the evaluation framework. The perception/data layer provides input data, the risk-warning layer returns warning scores and interpretation results, and the response-record layer connects them to task dispatch, response or mitigation action, verification, and feedback.",
+    "Fig 2. Evaluation architecture linking mine-warning outputs to documented response records.",
+    "Table 2. Open hazard-warning dataset profile.",
+    "Table 3. Six-step response-chain coding categories.",
+    "Fig 3 presents the event-level sequence used to code the public cases. It begins with perception input and warning interpretation, then proceeds through task dispatch, response or mitigation action, verification or closure, and feedback update.",
+    "Fig 3. Six-step sequence used to code warnings and documented responses.",
+    "Table 4. Model performance on the stratified held-out test set at decision cut-off = 0.5.",
+    "Fig 4 shows the receiver operating characteristic and precision-recall curves for the four classifiers.",
+    "Fig 4. Performance curves of baseline warning models on the UCI Seismic-bumps dataset. (a) ROC curves on the stratified held-out test set. (b) Precision-recall curves on the same test set. The dashed baseline in the precision-recall plot indicates the positive-class prevalence of 0.066.",
+    "Table 5. Logistic Regression decision-cut-off sensitivity and warning workload.",
+    "Fig 5. Sensitivity of Logistic Regression to the decision cut-off. Higher decision cut-offs reduced warning workload but increased missed hazardous cases.",
+    "Table 6. Public-record coding results for the non-exhaustive purposive sample of 32 accident and engineering cases.",
+    "S1 Fig. Logistic Regression calibration curve."
+  ]
+}

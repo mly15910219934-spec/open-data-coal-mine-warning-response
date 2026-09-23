@@ -1,0 +1,16 @@
+[
+  {
+    "source": "original_baseline/config/frozen_analysis_v2.yaml",
+    "destination": "config/frozen_analysis_v2.yaml",
+    "original_sha256": "ed444c5e9b3ec798298a0fe895a7adea9bcdf5dc37178cd0d66f2c4b07e5751d",
+    "release_sha256": "ed444c5e9b3ec798298a0fe895a7adea9bcdf5dc37178cd0d66f2c4b07e5751d",
+    "byte_identical": true
+  },
+  {
+    "source": "original_baseline/config/frozen_model_parameters_v2.yaml",
+    "destination": "config/frozen_model_parameters_v2.yaml",
+    "original_sha256": "61890cfe6afdc80fca036c440dd464d4416df5e5c31604d272fc59e18f9dc33d",
+    "release_sha256": "61890cfe6afdc80fca036c440dd464d4416df5e5c31604d272fc59e18f9dc33d",
+    "byte_identical": true
+  }
+]

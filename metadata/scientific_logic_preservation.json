@@ -1,0 +1,9 @@
+{
+  "all_existing_python_ASTs_match_after_reversing_path_only_substitution": true,
+  "frozen_config_hashes": {
+    "frozen_analysis_v2.yaml": "ed444c5e9b3ec798298a0fe895a7adea9bcdf5dc37178cd0d66f2c4b07e5751d",
+    "frozen_model_parameters_v2.yaml": "61890cfe6afdc80fca036c440dd464d4416df5e5c31604d272fc59e18f9dc33d",
+    "revision_protocol_v2_1_0.yaml": "0d27551f2da1c822edb3207c0364c42fff74e2f7b1a9c4fd1d5e2228dedb05f9"
+  },
+  "unchanged_reference_results": true
+}
